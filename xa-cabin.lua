@@ -1,5 +1,7 @@
+LIP = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/LIP.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
+local GUI = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/GUI.lua")
 
 --[[
 IMGUI Blank Template
@@ -16,8 +18,7 @@ if not SUPPORTS_FLOATING_WINDOWS then
 end
 -----------------------------------Variables go here--------------------------------------------
 --Set you variables here, datarefs, etc...
-
-
+SETTINGS = LIP.load(SCRIPT_DIRECTORY .. "xa-cabin.ini", SETTINGS)
 
 
 
@@ -32,73 +33,20 @@ function xa_cabin_on_build(xa_cabin_wnd, x, y) --<-- your GUI code goes in this 
     local win_height = imgui.GetWindowHeight()
     imgui.Columns(2)
     imgui.SetColumnWidth(0, win_width * 0.6)
-    if imgui.BeginChild("test", win_width * 0.6, win_height * 0.25) then
-        if imgui.Button("Button One") then -- Standard size button
-
-        end
-        imgui.SameLine()
-        imgui.SetCursorPosX(150)                    -- Control where next button will be placed
-
-        if imgui.Button("Button Two", 100, 50) then -- Bigger than normal sized button
-
-        end
-
-        imgui.SameLine()
-        imgui.SetCursorPosX(150 * 2)
-
-        if imgui.Button("Button Three", 100, 50) then
-
-        end
-    end
-    imgui.End()
-
+    
+    GUI.SimbriefInfo(win_width, win_height)
     imgui.NextColumn()
-    if imgui.BeginChild("test2", win_width * 0.4, win_height * 0.25) then
-        if imgui.Button("Button One") then -- Standard size button
-
-        end
-        imgui.SameLine()
-        imgui.SetCursorPosX(150)              -- Control where next button will be placed
-
-        if imgui.Button("Save", 100, 50) then -- Bigger than normal sized button
-
-        end
-    end
-    imgui.EndChild()
+    
+    GUI.Configuration(win_width, win_height)
     imgui.Columns()
+
     imgui.Separator()
     imgui.Spacing()
     imgui.Spacing()
     imgui.Spacing()
     imgui.Spacing()
 
-    if imgui.BeginChild("Manual Play", win_width - 32, win_height) then
-        imgui.SetWindowFontScale(1.2)
-        if imgui.BeginTable("table2", 3) then
-            for i = 1, #CABIN_STAGES, 3
-            do
-                imgui.Spacing()
-                imgui.Spacing()
-                imgui.Spacing()
-                imgui.Spacing()
-                imgui.TableNextRow()
-                imgui.TableNextColumn()
-                if imgui.Button(CABIN_STAGES[i], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-
-                end
-                imgui.TableNextColumn()
-                if imgui.Button(CABIN_STAGES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-
-                end
-                imgui.TableNextColumn()
-                if imgui.Button(CABIN_STAGES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-
-                end
-            end
-        end
-        imgui.EndTable()
-    end
-    imgui.EndChild()
+    GUI.Announcements(win_width, win_height)
 end -- function xa_cabin_on_build
 
 -------------------------------------------------------------------------------------------------
