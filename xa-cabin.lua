@@ -32,7 +32,7 @@ function xa_cabin_on_build(xa_cabin_wnd, x, y) --<-- your GUI code goes in this 
     local win_width = imgui.GetWindowWidth()
     local win_height = imgui.GetWindowHeight()
     imgui.Columns(2)
-    imgui.SetColumnWidth(0, win_width * 0.6)
+    imgui.SetColumnWidth(0, win_width * 0.5)
     
     GUI.SimbriefInfo(win_width, win_height)
     imgui.NextColumn()
@@ -62,7 +62,7 @@ end -- function xa_cabin_on_build
 xa_cabin_wnd = nil           -- flag for the show_wnd set to nil so that creation below can happen - float_wnd_create
 
 function xa_cabin_show_wnd() -- This is called when user toggles window on/off, if the next toggle is for ON
-    xa_cabin_wnd = float_wnd_create(800, 500, 1, true)
+    xa_cabin_wnd = float_wnd_create(680, 500, 1, true)
     float_wnd_set_title(xa_cabin_wnd, "XA Cabin " .. VERSION)
     float_wnd_set_imgui_builder(xa_cabin_wnd, "xa_cabin_on_build")
 end

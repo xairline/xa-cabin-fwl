@@ -1,6 +1,6 @@
 local GUI = {};
 local FIRST_ROW_HEIGHT_PERCENT = 0.45
-local SECOND_ROW_HEIGHT_PERCENT = (1 - FIRST_ROW_HEIGHT_PERCENT) * 0.8
+local SECOND_ROW_HEIGHT_PERCENT = (1 - FIRST_ROW_HEIGHT_PERCENT) * 0.85
 
 function GUI.SimbriefInfo(win_width, win_height)
     if imgui.BeginChild("SimbriefInfo", win_width * 0.6, win_height * FIRST_ROW_HEIGHT_PERCENT) then
