@@ -1,5 +1,5 @@
 local GUI = {};
-local FIRST_ROW_HEIGHT_PERCENT = 0.45
+local FIRST_ROW_HEIGHT_PERCENT = 0.5
 local SECOND_ROW_HEIGHT_PERCENT = (1 - FIRST_ROW_HEIGHT_PERCENT) * 0.85
 
 function GUI.SimbriefInfo(win_width, win_height)
@@ -50,17 +50,24 @@ function GUI.SimbriefInfo(win_width, win_height)
         imgui.PopStyleColor()
         imgui.Spacing()
 
-        imgui.TextUnformatted("Last Cabin State: ")
+        imgui.TextUnformatted("Cabin State: ")
         imgui.SameLine()
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("  " .. "CYOW")
+        imgui.TextUnformatted("       " .. "CYOW")
         imgui.PopStyleColor()
         imgui.Spacing()
 
-        imgui.TextUnformatted("Last Trigger Event: ")
+        imgui.TextUnformatted("Plane State: ")
         imgui.SameLine()
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("CYOW")
+        imgui.TextUnformatted("       " .. "CYOW")
+        imgui.PopStyleColor()
+        imgui.Spacing()
+
+        imgui.TextUnformatted("Event: ")
+        imgui.SameLine()
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
+        imgui.TextUnformatted("             " .. "CYOW")
         imgui.PopStyleColor()
         imgui.Spacing()
 
@@ -100,7 +107,6 @@ function GUI.Configuration(win_width, win_height)
         local currentMode = SETTINGS.mode.automated
         local modeChanged, newMode = imgui.Checkbox("Mode: ", currentMode)
         if modeChanged then
-            write_log("Changed automated mode to " .. tostring(newMode))
             currentMode = newMode
             SETTINGS.mode.automated = newMode
             LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", SETTINGS)
@@ -120,7 +126,6 @@ function GUI.Configuration(win_width, win_height)
         local currentLiveMode = SETTINGS.mode.live
         local liveModeChanged, newLiveMode = imgui.Checkbox("Announcements Generation: ", currentLiveMode)
         if liveModeChanged then
-            write_log("Changed automated mode to " .. tostring(newLiveMode))
             currentLiveMode = newLiveMode
             SETTINGS.mode.live = newLiveMode
             LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", SETTINGS)
