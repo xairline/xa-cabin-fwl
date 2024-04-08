@@ -2,6 +2,7 @@ LIP = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/LIP.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
 local GUI = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/GUI.lua")
+local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
 
 --[[
 IMGUI Blank Template
@@ -33,10 +34,10 @@ function xa_cabin_on_build(xa_cabin_wnd, x, y) --<-- your GUI code goes in this 
     local win_height = imgui.GetWindowHeight()
     imgui.Columns(2)
     imgui.SetColumnWidth(0, win_width * 0.5)
-    
+
     GUI.SimbriefInfo(win_width, win_height)
     imgui.NextColumn()
-    
+
     GUI.Configuration(win_width, win_height)
     imgui.Columns()
 
@@ -121,4 +122,9 @@ footnotes:  If changing color using PushStyleColor, here are common color codes:
     CYAN        = 0xFF00FFFF;
     MAGENTA     = 0xFFFF00FF;
     ]]
+function update_state()
+    STATE.update_flight_state()
+    STATE.update_cabin_state()
+end
 
+do_often("update_state()")
