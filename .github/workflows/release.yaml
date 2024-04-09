@@ -20,7 +20,7 @@ jobs:
 
       - name: Set VERSION variable in Lua file
         run: |
-          sed -i "s/VERSION = .*/VERSION = \"${{ env.VERSION }}\"/" Honeycomb-Bravo-Plugin/globals.lua
+          sed -i "s/VERSION = .*/VERSION = \"${{ env.VERSION }}\"/" xa-cabin/globals.lua
           rm -rf .git
           rm -rf .github
           rm -rf .vscode
