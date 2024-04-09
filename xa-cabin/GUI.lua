@@ -148,7 +148,7 @@ function GUI.Announcements(win_width, win_height)
     if imgui.BeginChild("Announcements", win_width - 32, win_height * SECOND_ROW_HEIGHT_PERCENT) then
         imgui.SetWindowFontScale(1.2)
         if imgui.BeginTable("table2", 3) then
-            for i = 1, #CABIN_STAGES, 3
+            for i = 1, #CABIN_STATES, 3
             do
                 imgui.Spacing()
                 imgui.Spacing()
@@ -156,16 +156,16 @@ function GUI.Announcements(win_width, win_height)
                 imgui.Spacing()
                 imgui.TableNextRow()
                 imgui.TableNextColumn()
-                if imgui.Button(CABIN_STAGES[i], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-
+                if imgui.Button(CABIN_STATES[i], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
+                    ANNOUNCEMENTS.play_sound(CABIN_STATES[i])
                 end
                 imgui.TableNextColumn()
-                if imgui.Button(CABIN_STAGES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-
+                if imgui.Button(CABIN_STATES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
+                    ANNOUNCEMENTS.play_sound(CABIN_STATES[i + 1])
                 end
                 imgui.TableNextColumn()
-                if imgui.Button(CABIN_STAGES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-
+                if imgui.Button(CABIN_STATES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
+                    ANNOUNCEMENTS.play_sound(CABIN_STATES[i + 2])
                 end
             end
         end

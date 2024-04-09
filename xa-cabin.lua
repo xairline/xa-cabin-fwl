@@ -4,6 +4,7 @@ dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/helpers.lua")
 local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
 local GUI = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/GUI.lua")
+ANNOUNCEMENTS = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/announcement.lua")
 
 
 --[[
@@ -145,5 +146,5 @@ function update_state()
         write_log("Error in update cabin state: " .. err2)
     end
 end
-
+ANNOUNCEMENTS.loadSounds()
 do_often("update_state()")

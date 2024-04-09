@@ -197,7 +197,7 @@ function change_cabin_state(new_state)
     STATES.cabin_state[STATES.cabin_state.current_state] = false
     STATES.cabin_state[new_state] = true
     STATES.cabin_state.current_state = new_state
-    XPLMSpeakString("Cabin state changed to: " .. new_state)
+    ANNOUNCEMENTS.play_sound(cabin_state_to_CANBIN_STATES(new_state))
     write_log("Flight state changed to: " .. new_state)
 end
 
@@ -233,7 +233,10 @@ function STATE.update_cabin_state()
     end
 
     if STATES.cabin_state.current_state == "takeoff" then
-        if STATES.flight_state.climb then
+        if DATAREFS.AGL == nil then
+            DATAREFS.AGL = dataref_table('sim/flightmodel/position/y_agl')
+        end
+        if STATES.flight_state.climb and DATAREFS.AGL[0] > 1000 then
             change_cabin_state("climb")
         end
         return
@@ -272,6 +275,28 @@ function STATE.update_cabin_state()
             change_cabin_state("pre_boarding")
         end
         return
+    end
+end
+
+function cabin_state_to_CANBIN_STATES(cabin_state)
+    if cabin_state == "pre_boarding" then
+        return CABIN_STATES[1]
+    elseif cabin_state == "boarding" then
+        return CABIN_STATES[2]
+    elseif cabin_state == "safety_demonstration" then
+        return CABIN_STATES[3]
+    elseif cabin_state == "takeoff" then
+        return CABIN_STATES[4]
+    elseif cabin_state == "climb" then
+        return CABIN_STATES[5]
+    elseif cabin_state == "cruise" then
+        return CABIN_STATES[6]
+    elseif cabin_state == "prepare_for_landing" then
+        return CABIN_STATES[7]
+    elseif cabin_state == "final_approach" then
+        return CABIN_STATES[8]
+    elseif cabin_state == "post_landing" then
+        return CABIN_STATES[9]
     end
 end
 

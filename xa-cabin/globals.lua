@@ -1,5 +1,5 @@
 VERSION = "v0.0.1"
-CABIN_STAGES = {
+CABIN_STATES = {
     "Pre-Boarding",
     "Boarding Completed",
     "Safety Demonstration",
@@ -8,7 +8,7 @@ CABIN_STAGES = {
     "Cruise",
     "Prepare for Landing",
     "Final Approach",
-    "Post-Landing"
+    "Post Landing"
 }
 
 SETTINGS = {
