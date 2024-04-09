@@ -1,7 +1,7 @@
 LIP = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/LIP.lua")
-dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
+LOGGER = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
-dofile(SCRIPT_DIRECTORY .. "/xa-cabin/helpers.lua")
+HELPERS = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/helpers.lua")
 local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
 local GUI = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/GUI.lua")
 ANNOUNCEMENTS = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/announcement.lua")
@@ -28,11 +28,11 @@ local plane_config_file_path = AIRCRAFT_PATH .. "/xa-cabin.ini"
 
 local plane_config_file = io.open(plane_config_file_path, "r")
 if plane_config_file == nil then
-    write_log("Creating new plane config file")
+    LOGGER.write_log("Creating new plane config file")
     LIP.save(plane_config_file_path, PLANE_CONFIG)
 end
 PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
-write_log("Loaded plane config file")
+LOGGER.write_log("Loaded plane config file")
 
 
 
@@ -138,13 +138,14 @@ footnotes:  If changing color using PushStyleColor, here are common color codes:
 function update_state()
     local status, err = pcall(STATE.update_flight_state)
     if not status then
-        write_log("Error in update flight state: " .. err)
+        LOGGER.write_log("Error in update flight state: " .. err)
     end
 
     local status2, err2 = pcall(STATE.update_cabin_state)
     if not status2 then
-        write_log("Error in update cabin state: " .. err2)
+        LOGGER.write_log("Error in update cabin state: " .. err2)
     end
 end
+
 ANNOUNCEMENTS.loadSounds()
 do_often("update_state()")

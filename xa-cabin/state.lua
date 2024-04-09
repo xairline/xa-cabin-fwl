@@ -12,7 +12,7 @@ function change_flight_state(new_state)
     STATES.flight_state[STATES.flight_state.current_state] = false
     STATES.flight_state[new_state] = true
     STATES.flight_state.current_state = new_state
-    write_log("Flight state changed to: " .. new_state)
+    LOGGER.write_log("Flight state changed to: " .. new_state)
 end
 
 function STATE.update_flight_state()
@@ -200,7 +200,7 @@ function change_cabin_state(new_state)
     if SETTINGS.mode.automated then
         ANNOUNCEMENTS.play_sound(cabin_state_to_CANBIN_STATES(new_state))
     end
-    write_log("Flight state changed to: " .. new_state)
+    LOGGER.write_log("Flight state changed to: " .. new_state)
 end
 
 function STATE.update_cabin_state()
@@ -214,21 +214,21 @@ function STATE.update_cabin_state()
     -- final_approach = false,       -- FA are seated for final approach
     -- post_landing = false,         -- FA are seated post landing
     if STATES.cabin_state.current_state == "pre_boarding" then
-        if is_door_open() and STATES.flight_state.parked then
+        if HELPERS.is_door_open() and STATES.flight_state.parked then
             change_cabin_state("boarding")
         end
         return
     end
 
     if STATES.cabin_state.current_state == "boarding" then
-        if not is_door_open() and STATES.flight_state.parked then
+        if not HELPERS.is_door_open() and STATES.flight_state.parked then
             change_cabin_state("safety_demonstration")
         end
         return
     end
 
     if STATES.cabin_state.current_state == "safety_demonstration" then
-        if is_rwy_ligths_on() and STATES.flight_state.taxi_out then
+        if HELPERS.is_rwy_ligths_on() and STATES.flight_state.taxi_out then
             change_cabin_state("takeoff")
         end
         return
