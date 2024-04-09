@@ -27,12 +27,12 @@ jobs:
           rm -rf scripts
       
       # covert markdown file to pdf
-      - name: Install Pandoc
-        run: sudo apt-get update && sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
-      - name: Convert markdown to PDF
-        run: |
-          pandoc profiles/README.md -o profiles/README.pdf
-          rm -rf profiles/README.md
+    #   - name: Install Pandoc
+    #     run: sudo apt-get update && sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
+    #   - name: Convert markdown to PDF
+    #     run: |
+    #       pandoc profiles/README.md -o profiles/README.pdf
+    #       rm -rf profiles/README.md
 
       - name: Zip the code
         run: zip -r release-${{ env.VERSION }}.zip .
