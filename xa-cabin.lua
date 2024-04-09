@@ -2,6 +2,7 @@ LIP = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/LIP.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/helpers.lua")
+local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
 local GUI = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/GUI.lua")
 
 
@@ -132,10 +133,10 @@ footnotes:  If changing color using PushStyleColor, here are common color codes:
     CYAN        = 0xFF00FFFF;
     MAGENTA     = 0xFFFF00FF;
     ]]
--- local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
--- function update_state()
---     STATE.update_flight_state()
---     STATE.update_cabin_state()
--- end
 
--- do_often("update_state()")
+function update_state()
+    STATE.update_flight_state()
+    STATE.update_cabin_state()
+end
+
+do_often("pcall(update_state)")

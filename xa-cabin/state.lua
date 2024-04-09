@@ -219,46 +219,58 @@ function STATE.update_cabin_state()
     end
 
     if STATES.cabin_state.current_state == "boarding" then
-        if ! is_door_open() and STATES.flight_state.parked then
+        if not is_door_open() and STATES.flight_state.parked then
             change_cabin_state("safety_demonstration")
         end
         return
     end
 
     if STATES.cabin_state.current_state == "safety_demonstration" then
-        -- if is_rwy_ligths_on() and STATES.flight_state.taxi_out then
-        --     change_cabin_state("takeoff")
-        -- end
+        if is_rwy_ligths_on() and STATES.flight_state.taxi_out then
+            change_cabin_state("takeoff")
+        end
         return
     end
 
     if STATES.cabin_state.current_state == "takeoff" then
-        -- check if the door is open and
+        if STATES.flight_state.climb then
+            change_cabin_state("climb")
+        end
         return
     end
 
     if STATES.cabin_state.current_state == "climb" then
-        -- check if the door is open and
+        if STATES.flight_state.cruise then
+            change_cabin_state("cruise")
+        end
         return
     end
 
     if STATES.cabin_state.current_state == "cruise" then
-        -- check if the door is open and
+        if STATES.flight_state.descent then
+            change_cabin_state("prepare_for_landing")
+        end
         return
     end
 
     if STATES.cabin_state.current_state == "prepare_for_landing" then
-        -- check if the door is open and
+        if STATES.flight_state.approach then
+            change_cabin_state("final_approach")
+        end
         return
     end
 
     if STATES.cabin_state.current_state == "final_approach" then
-        -- check if the door is open and
+        if STATES.flight_state.taxi_in then
+            change_cabin_state("post_landing")
+        end
         return
     end
 
     if STATES.cabin_state.current_state == "post_landing" then
-        -- check if the door is open and
+        if STATES.flight_state.parked then
+            change_cabin_state("pre_boarding")
+        end
         return
     end
 end
