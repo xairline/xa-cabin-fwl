@@ -197,7 +197,9 @@ function change_cabin_state(new_state)
     STATES.cabin_state[STATES.cabin_state.current_state] = false
     STATES.cabin_state[new_state] = true
     STATES.cabin_state.current_state = new_state
-    ANNOUNCEMENTS.play_sound(cabin_state_to_CANBIN_STATES(new_state))
+    if SETTINGS.mode.automated then
+        ANNOUNCEMENTS.play_sound(cabin_state_to_CANBIN_STATES(new_state))
+    end
     write_log("Flight state changed to: " .. new_state)
 end
 

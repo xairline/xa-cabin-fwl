@@ -1,14 +1,15 @@
 VERSION = "v0.0.1"
 CABIN_STATES = {
     "Pre-Boarding",
-    "Boarding Completed",
+    "Boarding",
     "Safety Demonstration",
     "Takeoff",
     "Climb",
     "Cruise",
     "Prepare for Landing",
     "Final Approach",
-    "Post Landing"
+    "Post Landing",
+    "Emergency"
 }
 
 SETTINGS = {

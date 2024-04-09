@@ -148,7 +148,7 @@ function GUI.Announcements(win_width, win_height)
     if imgui.BeginChild("Announcements", win_width - 32, win_height * SECOND_ROW_HEIGHT_PERCENT) then
         imgui.SetWindowFontScale(1.2)
         if imgui.BeginTable("table2", 3) then
-            for i = 1, #CABIN_STATES, 3
+            for i = 2, #CABIN_STATES, 3
             do
                 imgui.Spacing()
                 imgui.Spacing()
