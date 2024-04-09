@@ -25,7 +25,7 @@ function STATE.update_flight_state()
             DATAREFS.GEAR_FORCE = dataref_table('sim/flightmodel/forces/fnrml_gear')
         end
 
-        if DATAREFS.GS[0] > 0.1 and DATAREFS.GEAR_FORCE[0] > 1 then
+        if DATAREFS.GS[0] > 5 / 1.9 and DATAREFS.GEAR_FORCE[0] > 1 then
             change_flight_state("taxi_out")
         end
         return
@@ -189,6 +189,18 @@ function STATE.update_flight_state()
     end
 end
 
+function change_cabin_state(new_state)
+    if STATES.cabin_state[new_state] == nil then
+        logMsg("Invalid flight state: " .. new_state)
+        return
+    end
+    STATES.cabin_state[STATES.cabin_state.current_state] = false
+    STATES.cabin_state[new_state] = true
+    STATES.cabin_state.current_state = new_state
+    XPLMSpeakString("Cabin state changed to: " .. new_state)
+    write_log("Flight state changed to: " .. new_state)
+end
+
 function STATE.update_cabin_state()
     -- pre_boarding = true,          -- before FA are on board
     -- boarding = false,             -- FA are on board
@@ -200,17 +212,23 @@ function STATE.update_cabin_state()
     -- final_approach = false,       -- FA are seated for final approach
     -- post_landing = false,         -- FA are seated post landing
     if STATES.cabin_state.current_state == "pre_boarding" then
-        -- check if the door is open and
+        if is_door_open() and STATES.flight_state.parked then
+            change_cabin_state("boarding")
+        end
         return
     end
 
     if STATES.cabin_state.current_state == "boarding" then
-        -- check if the door is open and
+        if ! is_door_open() and STATES.flight_state.parked then
+            change_cabin_state("safety_demonstration")
+        end
         return
     end
 
     if STATES.cabin_state.current_state == "safety_demonstration" then
-        -- check if the door is open and
+        -- if is_rwy_ligths_on() and STATES.flight_state.taxi_out then
+        --     change_cabin_state("takeoff")
+        -- end
         return
     end
 

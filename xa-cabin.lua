@@ -1,8 +1,9 @@
 LIP = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/LIP.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
+dofile(SCRIPT_DIRECTORY .. "/xa-cabin/helpers.lua")
 local GUI = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/GUI.lua")
-local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
+
 
 --[[
 IMGUI Blank Template
@@ -19,8 +20,17 @@ if not SUPPORTS_FLOATING_WINDOWS then
 end
 -----------------------------------Variables go here--------------------------------------------
 --Set you variables here, datarefs, etc...
-SETTINGS = LIP.load(SCRIPT_DIRECTORY .. "xa-cabin.ini", SETTINGS)
+SETTINGS = LIP.load(SCRIPT_DIRECTORY .. "xa-cabin.ini")
+-- check if file exists, if not, create it
+local plane_config_file_path = AIRCRAFT_PATH .. "/xa-cabin.ini"
 
+local plane_config_file = io.open(plane_config_file_path, "r")
+if plane_config_file == nil then
+    write_log("Creating new plane config file")
+    LIP.save(plane_config_file_path, PLANE_CONFIG)
+end
+PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
+write_log("Loaded plane config file")
 
 
 
@@ -122,9 +132,10 @@ footnotes:  If changing color using PushStyleColor, here are common color codes:
     CYAN        = 0xFF00FFFF;
     MAGENTA     = 0xFFFF00FF;
     ]]
-function update_state()
-    STATE.update_flight_state()
-    STATE.update_cabin_state()
-end
+-- local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
+-- function update_state()
+--     STATE.update_flight_state()
+--     STATE.update_cabin_state()
+-- end
 
-do_often("update_state()")
+-- do_often("update_state()")

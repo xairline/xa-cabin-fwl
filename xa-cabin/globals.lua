@@ -44,18 +44,20 @@ STATES = {
         post_landing = false,         -- FA are seated post landing
         current_state = "pre_boarding"
     },
-    -- plane_state = {
-    --     parking_brake = true,
-    --     taxi_out = false,
-    --     takeoff = false,
-    --     climb = false,
-    --     cruise = false,
-    --     descent = false,
-    --     approach = false,
-    --     taxi_in = false,
-    --     current_state = "parked"
-    -- }
 }
 
 
 DATAREFS = {}
+
+PLANE_CONFIG = {
+    DOOR = {
+        dataref_str = 'sim/flightmodel2/misc/door_open_ratio',
+        operator = ">",
+        threshold = 0.9
+    },
+    LANDING_GEAR = {
+        dataref_str = 'sim/flightmodel2/gear/deploy_ratio',
+        operator = "~=",
+        threshold = 0
+    },
+}
