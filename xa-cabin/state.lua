@@ -70,7 +70,7 @@ function STATE.update_flight_state()
             STATE.cruise_counter = 0
         end
 
-        if STATE.VS[0] < -500 then
+        if DATAREFS.VS[0] < -500 then
             STATE.descend_counter = STATE.descend_counter + 1
         else
             STATE.descend_counter = 0
@@ -100,7 +100,7 @@ function STATE.update_flight_state()
             STATE.climb_counter = 0
         end
 
-        if STATE.VS[0] < -500 then
+        if DATAREFS.VS[0] < -500 then
             STATE.descend_counter = STATE.descend_counter + 1
         else
             STATE.descend_counter = 0
@@ -136,7 +136,7 @@ function STATE.update_flight_state()
             STATE.climb_counter = 0
         end
 
-        if STATE.VS[0] < 500 and STATE.VS[0] > -500 then
+        if DATAREFS.VS[0] < 500 and DATAREFS.VS[0] > -500 then
             STATE.cruise_counter = STATE.cruise_counter + 1
         else
             STATE.cruise_counter = 0

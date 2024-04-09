@@ -135,8 +135,15 @@ footnotes:  If changing color using PushStyleColor, here are common color codes:
     ]]
 
 function update_state()
-    STATE.update_flight_state()
-    STATE.update_cabin_state()
+    local status, err = pcall(STATE.update_flight_state)
+    if not status then
+        write_log("Error in update flight state: " .. err)
+    end
+
+    local status2, err2 = pcall(STATE.update_cabin_state)
+    if not status2 then
+        write_log("Error in update cabin state: " .. err2)
+    end
 end
 
-do_often("pcall(update_state)")
+do_often("update_state()")
