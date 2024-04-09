@@ -31,7 +31,7 @@ function ANNOUNCEMENTS.loadSounds()
     ANNOUNCEMENTS.stopSounds()
     -- ANNOUNCEMENTS.unloadAllSounds()
     for i = 2, #XA_CABIN_CABIN_XA_CABIN_STATES do
-        local wav_file_path = SCRIPT_DIRECTORY .. "/xa-cabin/announcements/" .. XA_CABIN_CABIN_XA_CABIN_STATES[i] .. "/audio.wav"
+        local wav_file_path = SCRIPT_DIRECTORY .. "xa-cabin/announcements/" .. XA_CABIN_CABIN_XA_CABIN_STATES[i] .. "/audio.wav"
         local tmp = io.open(wav_file_path, "r")
         if tmp == nil then
             LOGGER.write_log("File not found: " .. wav_file_path)
