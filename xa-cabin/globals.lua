@@ -1,5 +1,5 @@
-VERSION = "v0.0.1"
-CABIN_STATES = {
+XA_CABIN_VERSION = "v0.0.1"
+XA_CABIN_CABIN_XA_CABIN_STATES = {
     "Pre-Boarding",
     "Boarding",
     "Safety Demonstration",
@@ -12,7 +12,7 @@ CABIN_STATES = {
     "Emergency"
 }
 
-SETTINGS = {
+XA_CABIN_SETTINGS = {
     simbrief = {
         username = ""
     },
@@ -21,7 +21,7 @@ SETTINGS = {
     }
 }
 
-STATES = {
+XA_CABIN_STATES = {
     flight_state = {
         parked = true,
         taxi_out = false,
@@ -48,9 +48,9 @@ STATES = {
 }
 
 
-DATAREFS = {}
+XA_CABIN_DATAREFS = {}
 
-PLANE_CONFIG = {
+XA_CABIN_PLANE_CONFIG = {
     DOOR = {
         dataref_str = 'sim/flightmodel2/misc/door_open_ratio',
         operator = ">",

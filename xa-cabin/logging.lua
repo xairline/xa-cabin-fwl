@@ -1,6 +1,6 @@
 local LOGGER = {}
 function LOGGER.write_log(message)
-	logMsg(os.date('%H:%M:%S ') .. '[XA Cabin ' .. VERSION .. ']: ' .. message)
+	logMsg(os.date('%H:%M:%S ') .. '[XA Cabin ' .. XA_CABIN_VERSION .. ']: ' .. message)
 end
 
 function LOGGER.dumpTable(tbl, indent)

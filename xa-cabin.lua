@@ -22,16 +22,16 @@ if not SUPPORTS_FLOATING_WINDOWS then
 end
 -----------------------------------Variables go here--------------------------------------------
 --Set you variables here, datarefs, etc...
-SETTINGS = LIP.load(SCRIPT_DIRECTORY .. "xa-cabin.ini")
+XA_CABIN_SETTINGS = LIP.load(SCRIPT_DIRECTORY .. "xa-cabin.ini")
 -- check if file exists, if not, create it
 local plane_config_file_path = AIRCRAFT_PATH .. "/xa-cabin.ini"
 
 local plane_config_file = io.open(plane_config_file_path, "r")
 if plane_config_file == nil then
     LOGGER.write_log("Creating new plane config file")
-    LIP.save(plane_config_file_path, PLANE_CONFIG)
+    LIP.save(plane_config_file_path, XA_CABIN_PLANE_CONFIG)
 end
-PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
+XA_CABIN_PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
 LOGGER.write_log("Loaded plane config file")
 
 
@@ -76,7 +76,7 @@ xa_cabin_wnd = nil           -- flag for the show_wnd set to nil so that creatio
 
 function xa_cabin_show_wnd() -- This is called when user toggles window on/off, if the next toggle is for ON
     xa_cabin_wnd = float_wnd_create(680, 500, 1, true)
-    float_wnd_set_title(xa_cabin_wnd, "XA Cabin " .. VERSION)
+    float_wnd_set_title(xa_cabin_wnd, "XA Cabin " .. XA_CABIN_VERSION)
     float_wnd_set_imgui_builder(xa_cabin_wnd, "xa_cabin_on_build")
 end
 

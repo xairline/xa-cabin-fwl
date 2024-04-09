@@ -46,14 +46,14 @@ function GUI.SimbriefInfo(win_width, win_height)
         imgui.TextUnformatted("Flight State: ")
         imgui.SameLine()
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("      " .. STATES.flight_state.current_state)
+        imgui.TextUnformatted("      " .. XA_CABIN_STATES.flight_state.current_state)
         imgui.PopStyleColor()
         imgui.Spacing()
 
         imgui.TextUnformatted("Cabin State: ")
         imgui.SameLine()
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("       " .. STATES.cabin_state.current_state)
+        imgui.TextUnformatted("       " .. XA_CABIN_STATES.cabin_state.current_state)
         imgui.PopStyleColor()
         imgui.Spacing()
 
@@ -88,13 +88,13 @@ function GUI.Configuration(win_width, win_height)
         imgui.TextUnformatted("Simbrief Username")
         imgui.SameLine()
 
-        if SETTINGS.simbrief.username == nil then
-            SETTINGS.simbrief.username = ""
+        if XA_CABIN_SETTINGS.simbrief.username == nil then
+            XA_CABIN_SETTINGS.simbrief.username = ""
         end
-        local sbfUsernameChanged, newUsername = imgui.InputText("", SETTINGS.simbrief.username, 255)
+        local sbfUsernameChanged, newUsername = imgui.InputText("", XA_CABIN_SETTINGS.simbrief.username, 255)
         if sbfUsernameChanged then
-            SETTINGS.simbrief.username = newUsername
-            LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", SETTINGS)
+            XA_CABIN_SETTINGS.simbrief.username = newUsername
+            LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", XA_CABIN_SETTINGS)
         end
         imgui.Spacing()
         imgui.Spacing()
@@ -104,16 +104,16 @@ function GUI.Configuration(win_width, win_height)
         imgui.Spacing()
         imgui.Spacing()
 
-        local currentMode = SETTINGS.mode.automated
+        local currentMode = XA_CABIN_SETTINGS.mode.automated
         local modeChanged, newMode = imgui.Checkbox("Mode: ", currentMode)
         if modeChanged then
             currentMode = newMode
-            SETTINGS.mode.automated = newMode
-            LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", SETTINGS)
+            XA_CABIN_SETTINGS.mode.automated = newMode
+            LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", XA_CABIN_SETTINGS)
         end
 
         imgui.SameLine()
-        if SETTINGS.mode.automated then
+        if XA_CABIN_SETTINGS.mode.automated then
             imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
             imgui.TextUnformatted("Automated")
         else
@@ -123,16 +123,16 @@ function GUI.Configuration(win_width, win_height)
         imgui.PopStyleColor()
 
         imgui.Spacing()
-        local currentLiveMode = SETTINGS.mode.live
+        local currentLiveMode = XA_CABIN_SETTINGS.mode.live
         local liveModeChanged, newLiveMode = imgui.Checkbox("Announcements Generation: ", currentLiveMode)
         if liveModeChanged then
             currentLiveMode = newLiveMode
-            SETTINGS.mode.live = newLiveMode
-            LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", SETTINGS)
+            XA_CABIN_SETTINGS.mode.live = newLiveMode
+            LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", XA_CABIN_SETTINGS)
         end
 
         imgui.SameLine()
-        if SETTINGS.mode.live then
+        if XA_CABIN_SETTINGS.mode.live then
             imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
             imgui.TextUnformatted("Live")
         else
@@ -147,8 +147,8 @@ end
 function GUI.Announcements(win_width, win_height)
     if imgui.BeginChild("Announcements", win_width - 32, win_height * SECOND_ROW_HEIGHT_PERCENT) then
         imgui.SetWindowFontScale(1.2)
-        if imgui.BeginTable("table2", 3) then
-            for i = 2, #CABIN_STATES, 3
+        if imgui.BeginTable("XA Cabin", 3) then
+            for i = 2, #XA_CABIN_CABIN_XA_CABIN_STATES, 3
             do
                 imgui.Spacing()
                 imgui.Spacing()
@@ -156,16 +156,16 @@ function GUI.Announcements(win_width, win_height)
                 imgui.Spacing()
                 imgui.TableNextRow()
                 imgui.TableNextColumn()
-                if imgui.Button(CABIN_STATES[i], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-                    ANNOUNCEMENTS.play_sound(CABIN_STATES[i])
+                if imgui.Button(XA_CABIN_CABIN_XA_CABIN_STATES[i], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
+                    ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i])
                 end
                 imgui.TableNextColumn()
-                if imgui.Button(CABIN_STATES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-                    ANNOUNCEMENTS.play_sound(CABIN_STATES[i + 1])
+                if imgui.Button(XA_CABIN_CABIN_XA_CABIN_STATES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
+                    ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i + 1])
                 end
                 imgui.TableNextColumn()
-                if imgui.Button(CABIN_STATES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-                    ANNOUNCEMENTS.play_sound(CABIN_STATES[i + 2])
+                if imgui.Button(XA_CABIN_CABIN_XA_CABIN_STATES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
+                    ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i + 2])
                 end
             end
         end
