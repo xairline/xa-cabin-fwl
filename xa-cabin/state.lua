@@ -2,6 +2,7 @@ local STATE = {
     climb_counter = 0,
     cruise_counter = 0,
     descend_counter = 0,
+    bording_delay_counter = 0,
 }
 
 function change_flight_state(new_state)
@@ -215,13 +216,17 @@ function STATE.update_cabin_state()
     -- post_landing = false,         -- FA are seated post landing
     if XA_CABIN_STATES.cabin_state.current_state == "pre_boarding" then
         if HELPERS.is_door_open() and XA_CABIN_STATES.flight_state.parked then
-            change_cabin_state("boarding")
+            STATE.bording_delay_counter = STATE.bording_delay_counter + 1
+            -- random delay 45-60
+            if STATE.bording_delay_counter > math.random(30, 40) then
+                change_cabin_state("boarding")
+            end
         end
         return
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "boarding" then
-        if not HELPERS.is_door_open() and XA_CABIN_STATES.flight_state.parked then
+        if not HELPERS.is_door_open() and XA_CABIN_STATES.flight_state.taxi_out then
             change_cabin_state("safety_demonstration")
         end
         return
