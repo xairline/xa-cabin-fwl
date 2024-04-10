@@ -1,5 +1,5 @@
 local GUI = {};
-local FIRST_ROW_HEIGHT_PERCENT = 0.5
+local FIRST_ROW_HEIGHT_PERCENT = 0.35
 local SECOND_ROW_HEIGHT_PERCENT = (1 - FIRST_ROW_HEIGHT_PERCENT) * 0.85
 
 function GUI.SimbriefInfo(win_width, win_height)
@@ -54,27 +54,6 @@ function GUI.SimbriefInfo(win_width, win_height)
         imgui.SameLine()
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
         imgui.TextUnformatted("       " .. XA_CABIN_STATES.cabin_state.current_state)
-        imgui.PopStyleColor()
-        imgui.Spacing()
-
-        imgui.TextUnformatted("Plane State: ")
-        imgui.SameLine()
-        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("       " .. "TODO")
-        imgui.PopStyleColor()
-        imgui.Spacing()
-
-        imgui.TextUnformatted("Event: ")
-        imgui.SameLine()
-        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("             " .. "TODO")
-        imgui.PopStyleColor()
-        imgui.Spacing()
-
-        imgui.TextUnformatted("Announcement State: ")
-        imgui.SameLine()
-        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("TODO")
         imgui.PopStyleColor()
         imgui.Spacing()
     end
@@ -160,10 +139,17 @@ function GUI.Announcements(win_width, win_height)
                     ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i])
                 end
                 imgui.TableNextColumn()
+                if XA_CABIN_CABIN_XA_CABIN_STATES[i + 1] == nil then
+                    break
+                end
                 if imgui.Button(XA_CABIN_CABIN_XA_CABIN_STATES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
                     ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i + 1])
                 end
                 imgui.TableNextColumn()
+
+                if XA_CABIN_CABIN_XA_CABIN_STATES[i + 2] == nil then
+                    break
+                end
                 if imgui.Button(XA_CABIN_CABIN_XA_CABIN_STATES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
                     ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i + 2])
                 end

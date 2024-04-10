@@ -153,8 +153,9 @@ function STATE.update_flight_state()
             return
         end
 
-        if XA_CABIN_DATAREFS.AGL[0] < 800 and XA_CABIN_DATAREFS.GEAR_FORCE[0] < 5 and XA_CABIN_DATAREFS.VS[0] > -200 then
+        if XA_CABIN_DATAREFS.AGL[0] < 800 and XA_CABIN_DATAREFS.GEAR_FORCE[0] < 5 and XA_CABIN_DATAREFS.VS[0] < -200 then
             change_flight_state("approach")
+            return
         end
         return
     end
@@ -205,15 +206,6 @@ function change_cabin_state(new_state)
 end
 
 function STATE.update_cabin_state()
-    -- pre_boarding = true,          -- before FA are on board
-    -- boarding = false,             -- FA are on board
-    -- safety_demonstration = false, -- FA are doing safety demonstration
-    -- takeoff = false,              -- FA are seated for takeoff
-    -- climb = false,                -- FA are seated for climb
-    -- cruise = false,               -- FA are seated for cruise
-    -- prepare_for_landing = false,  -- FA are seated for landing
-    -- final_approach = false,       -- FA are seated for final approach
-    -- post_landing = false,         -- FA are seated post landing
     if XA_CABIN_STATES.cabin_state.current_state == "pre_boarding" then
         if HELPERS.is_door_open() and XA_CABIN_STATES.flight_state.parked then
             STATE.bording_delay_counter = STATE.bording_delay_counter + 1
@@ -226,7 +218,14 @@ function STATE.update_cabin_state()
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "boarding" then
-        if not HELPERS.is_door_open() and XA_CABIN_STATES.flight_state.taxi_out then
+        if not HELPERS.is_door_open() and not XA_CABIN_STATES.flight_state.taxi_out then
+            change_cabin_state("boarding_complete")
+        end
+        return
+    end
+
+    if XA_CABIN_STATES.cabin_state.current_state == "boarding_complete" then
+        if XA_CABIN_STATES.flight_state.taxi_out then
             change_cabin_state("safety_demonstration")
         end
         return
@@ -290,20 +289,22 @@ function cabin_state_to_CANBIN_XA_CABIN_STATES(cabin_state)
         return XA_CABIN_CABIN_XA_CABIN_STATES[1]
     elseif cabin_state == "boarding" then
         return XA_CABIN_CABIN_XA_CABIN_STATES[2]
-    elseif cabin_state == "safety_demonstration" then
+    elseif cabin_state == "boarding_complete" then
         return XA_CABIN_CABIN_XA_CABIN_STATES[3]
-    elseif cabin_state == "takeoff" then
+    elseif cabin_state == "safety_demonstration" then
         return XA_CABIN_CABIN_XA_CABIN_STATES[4]
-    elseif cabin_state == "climb" then
+    elseif cabin_state == "takeoff" then
         return XA_CABIN_CABIN_XA_CABIN_STATES[5]
-    elseif cabin_state == "cruise" then
+    elseif cabin_state == "climb" then
         return XA_CABIN_CABIN_XA_CABIN_STATES[6]
-    elseif cabin_state == "prepare_for_landing" then
+    elseif cabin_state == "cruise" then
         return XA_CABIN_CABIN_XA_CABIN_STATES[7]
-    elseif cabin_state == "final_approach" then
+    elseif cabin_state == "prepare_for_landing" then
         return XA_CABIN_CABIN_XA_CABIN_STATES[8]
-    elseif cabin_state == "post_landing" then
+    elseif cabin_state == "final_approach" then
         return XA_CABIN_CABIN_XA_CABIN_STATES[9]
+    elseif cabin_state == "post_landing" then
+        return XA_CABIN_CABIN_XA_CABIN_STATES[10]
     end
 end
 

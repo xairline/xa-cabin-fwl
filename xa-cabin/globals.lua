@@ -2,6 +2,7 @@ XA_CABIN_VERSION = "v0.0.1"
 XA_CABIN_CABIN_XA_CABIN_STATES = {
     "Pre-Boarding",
     "Boarding",
+    "Boarding Complete",
     "Safety Demonstration",
     "Takeoff",
     "Climb",
@@ -36,6 +37,7 @@ XA_CABIN_STATES = {
     cabin_state = {
         pre_boarding = true,          -- before FA are on board
         boarding = false,             -- FA are on board
+        boarding_complete = false,    -- FA are seated and boarding is complete
         safety_demonstration = false, -- FA are doing safety demonstration
         takeoff = false,              -- FA are seated for takeoff
         climb = false,                -- FA are seated for climb
