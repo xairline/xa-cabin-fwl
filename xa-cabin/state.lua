@@ -218,7 +218,7 @@ function STATE.update_cabin_state()
         if HELPERS.is_door_open() and XA_CABIN_STATES.flight_state.parked then
             STATE.bording_delay_counter = STATE.bording_delay_counter + 1
             -- random delay 45-60
-            if STATE.bording_delay_counter > math.random(30, 40) then
+            if STATE.bording_delay_counter > math.random(90, 120) then
                 change_cabin_state("boarding")
             end
         end
