@@ -130,6 +130,32 @@ function GUI.Configuration(win_width, win_height)
             imgui.TextUnformatted("Offline")
         end
         imgui.PopStyleColor()
+        imgui.Spacing()
+        imgui.Spacing()
+
+        imgui.Separator()
+        imgui.Spacing()
+        imgui.Spacing()
+        imgui.TextUnformatted("Language: ")
+        imgui.SameLine()
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
+        imgui.TextUnformatted("     " .. XA_CABIN_SETTINGS.announcement.language)
+        imgui.PopStyleColor()
+        imgui.Spacing()
+
+        imgui.TextUnformatted("Accent: ")
+        imgui.SameLine()
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
+        imgui.TextUnformatted("       " .. XA_CABIN_SETTINGS.announcement.accent)
+        imgui.PopStyleColor()
+        imgui.Spacing()
+
+        imgui.TextUnformatted("Speaker: ")
+        imgui.SameLine()
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
+        imgui.TextUnformatted("      " .. XA_CABIN_SETTINGS.announcement.speaker)
+        imgui.PopStyleColor()
+        imgui.Spacing()
     end
     imgui.EndChild()
 end

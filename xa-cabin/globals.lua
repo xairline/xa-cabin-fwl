@@ -19,6 +19,11 @@ XA_CABIN_SETTINGS = {
     },
     mode = {
         automated = false
+    },
+    announcement = {
+        language = "en",
+        accent = "in",
+        speaker = "01"
     }
 }
 

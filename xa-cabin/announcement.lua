@@ -30,8 +30,14 @@ end
 function ANNOUNCEMENTS.loadSounds()
     ANNOUNCEMENTS.stopSounds()
     -- ANNOUNCEMENTS.unloadAllSounds()
+    local language = XA_CABIN_SETTINGS.announcement.language
+    local accent = XA_CABIN_SETTINGS.announcement.accent
+    local speaker = XA_CABIN_SETTINGS.announcement.speaker
+    LOGGER.dumpTable(XA_CABIN_CABIN_XA_CABIN_STATES)
     for i = 2, #XA_CABIN_CABIN_XA_CABIN_STATES do
-        local wav_file_path = SCRIPT_DIRECTORY .. "xa-cabin/announcements/" .. XA_CABIN_CABIN_XA_CABIN_STATES[i] .. "/audio.wav"
+        local wav_file_path = SCRIPT_DIRECTORY ..
+            "xa-cabin/announcements/" ..
+            XA_CABIN_CABIN_XA_CABIN_STATES[i] .. "/" .. language .. "-" .. accent .. "-" .. speaker .. ".wav"
         local tmp = io.open(wav_file_path, "r")
         if tmp == nil then
             LOGGER.write_log("File not found: " .. wav_file_path)

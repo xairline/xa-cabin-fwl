@@ -76,7 +76,6 @@ status, err = pcall(readXML)
 if not status then
     LOGGER.write_log("Error in update flight state: " .. err)
 end
-LOGGER.dumpTable(SIMBRIEF)
 
 
 
