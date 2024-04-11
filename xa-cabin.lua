@@ -33,7 +33,7 @@ if plane_config_file == nil then
 end
 XA_CABIN_PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
 LOGGER.write_log("Loaded plane config file")
-
+SIMBRIEF = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/simbrief.lua")
 
 
 

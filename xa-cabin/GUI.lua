@@ -1,40 +1,51 @@
 local GUI = {};
-local FIRST_ROW_HEIGHT_PERCENT = 0.35
+local FIRST_ROW_HEIGHT_PERCENT = 0.4
 local SECOND_ROW_HEIGHT_PERCENT = (1 - FIRST_ROW_HEIGHT_PERCENT) * 0.85
 
 function GUI.SimbriefInfo(win_width, win_height)
     if imgui.BeginChild("SimbriefInfo", win_width * 0.6, win_height * FIRST_ROW_HEIGHT_PERCENT) then
+        imgui.TextUnformatted("Flight No: ")
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
+        imgui.SameLine()
+        imgui.TextUnformatted("      " .. SIMBRIEF["Callsign"])
+        imgui.PopStyleColor()
+        imgui.Spacing()
+
         imgui.TextUnformatted("Departue: ")
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
         imgui.SameLine()
-        imgui.TextUnformatted("       " .. "TODO")
+        imgui.TextUnformatted("       " .. SIMBRIEF["Origin"] ..
+            " / " .. SIMBRIEF["OrigName"] .. " / " .. SIMBRIEF["OrigRwy"])
         imgui.PopStyleColor()
         imgui.Spacing()
 
         imgui.TextUnformatted("Arrival: ")
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
         imgui.SameLine()
-        imgui.TextUnformatted("        " .. "TODO")
+        imgui.TextUnformatted("        " .. SIMBRIEF["Destination"] ..
+            " / " .. SIMBRIEF["DestName"] .. " / " .. SIMBRIEF["DestRwy"])
         imgui.PopStyleColor()
         imgui.Spacing()
 
         imgui.TextUnformatted("Flight Time: ")
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
         imgui.SameLine()
-        imgui.TextUnformatted("    " .. "TODO")
+        imgui.TextUnformatted("    " ..
+            tostring(math.floor(SIMBRIEF["Ete"] / 3600)) ..
+            " hr " .. tostring(math.floor((SIMBRIEF["Ete"] % 3660) / 60)) .. " min")
         imgui.PopStyleColor()
         imgui.Spacing()
 
         imgui.TextUnformatted("Cruise Altitude: ")
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
         imgui.SameLine()
-        imgui.TextUnformatted("" .. "TODO")
+        imgui.TextUnformatted("" .. SIMBRIEF["Level"])
         imgui.PopStyleColor()
         imgui.Spacing()
 
         imgui.TextUnformatted("Route: ")
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("    " .. "TODO")
+        imgui.TextUnformatted("    " .. SIMBRIEF["Route"])
         imgui.PopStyleColor()
         imgui.Spacing()
 
