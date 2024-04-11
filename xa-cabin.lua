@@ -32,6 +32,13 @@ if plane_config_file == nil then
     LIP.save(plane_config_file_path, XA_CABIN_PLANE_CONFIG)
 end
 XA_CABIN_PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
+if XA_CABIN_PLANE_CONFIG.RWY_LIGHTS ~= nil then
+    XA_CABIN_PLANE_CONFIG["LANGING_LIGHTS"] = {}
+    XA_CABIN_PLANE_CONFIG["LANGING_LIGHTS"] = XA_CABIN_PLANE_CONFIG.RWY_LIGHTS
+    XA_CABIN_PLANE_CONFIG.RWY_LIGHTS = nil
+    LIP.save(AIRCRAFT_PATH .. "/xa-cabin.ini", XA_CABIN_PLANE_CONFIG)
+end
+
 LOGGER.write_log("Loaded plane config file")
 SIMBRIEF = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/simbrief.lua")
 

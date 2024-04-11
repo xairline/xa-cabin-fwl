@@ -75,7 +75,7 @@ A file named `xa-cabin.ini` is automatically created the first time you load tha
 - threshold: This option sets the threshold value for the condition. It is set to 0.9.
 - dataref_str: This option specifies the data reference string, which is a reference to a specific data value in the simulation. In this case, it is set to sim/flightmodel2/misc/door_open_ratio.
 
-[RWY_LIGHTS]:
+[LANGING_LIGHTS]:
 
 - operator: This option specifies the comparison operator used to evaluate the condition. Here, it is set to ===, which means "strictly equal to".
 - threshold: This option sets the threshold value for the condition. It is set to 1.

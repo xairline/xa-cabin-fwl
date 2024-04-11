@@ -68,9 +68,9 @@ XA_CABIN_PLANE_CONFIG = {
         operator = "~=",
         threshold = 0
     },
-    RWY_LIGHTS = {
+    LANDING_LIGHTS = {
         dataref_str = 'ckpt/oh/rwyTurnOff/anim',
         operator = "==",
         threshold = 1
-    }
+    },
 }
