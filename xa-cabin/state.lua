@@ -232,7 +232,7 @@ function STATE.update_cabin_state()
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "safety_demonstration" then
-        if HELPERS.is_rwy_ligths_on() and XA_CABIN_STATES.flight_state.taxi_out then
+        if HELPERS.is_landing_ligths_on() and XA_CABIN_STATES.flight_state.taxi_out then
             change_cabin_state("takeoff")
         end
         return
