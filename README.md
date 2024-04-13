@@ -84,6 +84,26 @@ A file named `xa-cabin.ini` is automatically created the first time you load tha
 
 # Sound Pack
 Currently, all announcements are generated using AI technology. However, we are actively working on developing a dedicated tool that will allow you to create your own custom sound pack in the future.
-## Add Sound Pack (TODO)
+
+## List of sound
+
+|language|accent|speaker|description|
+|--------|------|-------|-----------|
+|en|gb|1|Britsh Accent|
+|en|ca|1|Canadian Accent - SAS special|
+|en|in|1|Indian Accent|
+
+## Add Sound Pack
+
+Follow above naming convention, drop your wav files in each folder under `xa-cabin/announcements`
+
+change the configuration in `xa-cabin.ini`
+
+```
+[announcement]
+language=en
+accent=gb
+speaker=1
+```
 
 ## Live Generation (TODO)
