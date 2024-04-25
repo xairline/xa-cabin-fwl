@@ -5,8 +5,8 @@ function HELPERS.is_door_open()
         local funcCode = [[
             return function(x, debug)
                 if debug then
-                    LOGGER.write_log('Dataref: ' .. x)
-                    LOGGER.write_log('Debug: ' .. tostring(debug))
+                    XA_CABIN_LOGGER.write_log('Dataref: ' .. x)
+                    XA_CABIN_LOGGER.write_log('Debug: ' .. tostring(debug))
                 end
                 return x]] .. XA_CABIN_PLANE_CONFIG.DOOR.operator .. XA_CABIN_PLANE_CONFIG.DOOR.threshold .. [[
             end
@@ -22,8 +22,8 @@ function HELPERS.is_landing_ligths_on()
         local funcCode = [[
             return function(x, debug)
                 if debug then
-                    LOGGER.write_log('Dataref: ' .. x)
-                    LOGGER.write_log('Debug: ' .. tostring(debug))
+                    XA_CABIN_LOGGER.write_log('Dataref: ' .. x)
+                    XA_CABIN_LOGGER.write_log('Debug: ' .. tostring(debug))
                 end
                 return x]] .. XA_CABIN_PLANE_CONFIG.LANDING_LIGHTS.operator .. XA_CABIN_PLANE_CONFIG.LANDING_LIGHTS.threshold .. [[
             end

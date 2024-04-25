@@ -22,7 +22,7 @@ function get_simbrief_data()
         XA_CABIN_SETTINGS.simbrief.username)
 
     if webStatus ~= 200 then
-        LOGGER.write_log("Simbrief API is not responding OK")
+        XA_CABIN_LOGGER.write_log("Simbrief API is not responding OK")
         return false
     end
 
@@ -30,7 +30,7 @@ function get_simbrief_data()
     f:write(webRespose)
     f:close()
 
-    LOGGER.write_log("Simbrief XML data downloaded")
+    XA_CABIN_LOGGER.write_log("Simbrief XML data downloaded")
     return true
 end
 
@@ -38,7 +38,7 @@ function readXML()
     -- New XML parser
     local xml_file = io.open(SCRIPT_DIRECTORY .. "simbrief.xml", "r")
     if xml_file == nil then
-        LOGGER.write_log("No Simbrief XML file found")
+        XA_CABIN_LOGGER.write_log("No Simbrief XML file found")
         return false
     end
 
@@ -69,12 +69,12 @@ end
 
 local status, err = pcall(get_simbrief_data)
 if not status then
-    LOGGER.write_log("Error: " .. err)
+    XA_CABIN_LOGGER.write_log("Error: " .. err)
 end
 
 status, err = pcall(readXML)
 if not status then
-    LOGGER.write_log("Error in update flight state: " .. err)
+    XA_CABIN_LOGGER.write_log("Error in update flight state: " .. err)
 end
 
 

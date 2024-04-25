@@ -1,19 +1,19 @@
-local LOGGER = {}
-function LOGGER.write_log(message)
+local XA_CABIN_LOGGER = {}
+function XA_CABIN_LOGGER.write_log(message)
 	logMsg(os.date('%H:%M:%S ') .. '[XA Cabin ' .. XA_CABIN_VERSION .. ']: ' .. message)
 end
 
-function LOGGER.dumpTable(tbl, indent)
+function XA_CABIN_LOGGER.dumpTable(tbl, indent)
 	if not indent then indent = 0 end
 	for k, v in pairs(tbl) do
 		formatting = string.rep("  ", indent) .. k .. ": "
 		if type(v) == "table" then
-			LOGGER.write_log(formatting)
-			LOGGER.dumpTable(v, indent + 1)
+			XA_CABIN_LOGGER.write_log(formatting)
+			XA_CABIN_LOGGER.dumpTable(v, indent + 1)
 		else
-			LOGGER.write_log(formatting .. tostring(v))
+			XA_CABIN_LOGGER.write_log(formatting .. tostring(v))
 		end
 	end
 end
 
-return LOGGER
+return XA_CABIN_LOGGER

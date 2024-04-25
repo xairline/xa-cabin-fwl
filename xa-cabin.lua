@@ -1,5 +1,5 @@
 LIP = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/LIP.lua")
-LOGGER = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
+XA_CABIN_LOGGER = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
 dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
 HELPERS = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/helpers.lua")
 local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
@@ -28,7 +28,7 @@ local plane_config_file_path = AIRCRAFT_PATH .. "/xa-cabin.ini"
 
 local plane_config_file = io.open(plane_config_file_path, "r")
 if plane_config_file == nil then
-    LOGGER.write_log("Creating new plane config file")
+    XA_CABIN_LOGGER.write_log("Creating new plane config file")
     LIP.save(plane_config_file_path, XA_CABIN_PLANE_CONFIG)
 end
 XA_CABIN_PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
@@ -40,8 +40,8 @@ if XA_CABIN_PLANE_CONFIG.RWY_LIGHTS ~= nil then
     XA_CABIN_PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
 end
 
-LOGGER.dumpTable(XA_CABIN_PLANE_CONFIG)
-LOGGER.write_log("Loaded plane config file")
+XA_CABIN_LOGGER.dumpTable(XA_CABIN_PLANE_CONFIG)
+XA_CABIN_LOGGER.write_log("Loaded plane config file")
 SIMBRIEF = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/simbrief.lua")
 
 
@@ -144,17 +144,17 @@ footnotes:  If changing color using PushStyleColor, here are common color codes:
     MAGENTA     = 0xFFFF00FF;
     ]]
 
-function update_state()
+function xa_cabin_update_state()
     local status, err = pcall(STATE.update_flight_state)
     if not status then
-        LOGGER.write_log("Error in update flight state: " .. err)
+        XA_CABIN_LOGGER.write_log("Error in update flight state: " .. err)
     end
 
     local status2, err2 = pcall(STATE.update_cabin_state)
     if not status2 then
-        LOGGER.write_log("Error in update cabin state: " .. err2)
+        XA_CABIN_LOGGER.write_log("Error in update cabin state: " .. err2)
     end
 end
 
 ANNOUNCEMENTS.loadSounds()
-do_often("update_state()")
+do_often("xa_cabin_update_state()")

@@ -5,7 +5,7 @@ local ANNOUNCEMENTS = {
 function ANNOUNCEMENTS.play_sound(cabin_state)
     ANNOUNCEMENTS.stopSounds()
     play_sound(ANNOUNCEMENTS.sounds[cabin_state])
-    LOGGER.write_log("Playing announcement for " .. ANNOUNCEMENTS.files[cabin_state])
+    XA_CABIN_LOGGER.write_log("Playing announcement for " .. ANNOUNCEMENTS.files[cabin_state])
 end
 
 function ANNOUNCEMENTS.stopSounds()
@@ -24,7 +24,7 @@ function ANNOUNCEMENTS.unloadAllSounds()
             ANNOUNCEMENTS.sounds[index] = false
         end
     end
-    LOGGER.write_log("Unloaded all sounds")
+    XA_CABIN_LOGGER.write_log("Unloaded all sounds")
 end
 
 function ANNOUNCEMENTS.loadSounds()
@@ -33,21 +33,21 @@ function ANNOUNCEMENTS.loadSounds()
     local language = XA_CABIN_SETTINGS.announcement.language
     local accent = XA_CABIN_SETTINGS.announcement.accent
     local speaker = XA_CABIN_SETTINGS.announcement.speaker
-    LOGGER.dumpTable(XA_CABIN_CABIN_XA_CABIN_STATES)
+    XA_CABIN_LOGGER.dumpTable(XA_CABIN_CABIN_XA_CABIN_STATES)
     for i = 2, #XA_CABIN_CABIN_XA_CABIN_STATES do
         local wav_file_path = SCRIPT_DIRECTORY ..
             "xa-cabin/announcements/" ..
             XA_CABIN_CABIN_XA_CABIN_STATES[i] .. "/" .. language .. "-" .. accent .. "-" .. speaker .. ".wav"
         local tmp = io.open(wav_file_path, "r")
         if tmp == nil then
-            LOGGER.write_log("File not found: " .. wav_file_path)
+            XA_CABIN_LOGGER.write_log("File not found: " .. wav_file_path)
         else
             local index = load_WAV_file(wav_file_path)
             ANNOUNCEMENTS.sounds[XA_CABIN_CABIN_XA_CABIN_STATES[i]] = index
             ANNOUNCEMENTS.files[XA_CABIN_CABIN_XA_CABIN_STATES[i]] = wav_file_path
         end
     end
-    LOGGER.dumpTable(ANNOUNCEMENTS.sounds)
+    XA_CABIN_LOGGER.dumpTable(ANNOUNCEMENTS.sounds)
 end
 
 return ANNOUNCEMENTS

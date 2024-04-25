@@ -13,7 +13,7 @@ function change_flight_state(new_state)
     XA_CABIN_STATES.flight_state[XA_CABIN_STATES.flight_state.current_state] = false
     XA_CABIN_STATES.flight_state[new_state] = true
     XA_CABIN_STATES.flight_state.current_state = new_state
-    LOGGER.write_log("Flight state changed to: " .. new_state)
+    XA_CABIN_LOGGER.write_log("Flight state changed to: " .. new_state)
 end
 
 function STATE.update_flight_state()
@@ -202,7 +202,7 @@ function change_cabin_state(new_state)
     if XA_CABIN_SETTINGS.mode.automated then
         ANNOUNCEMENTS.play_sound(cabin_state_to_CANBIN_XA_CABIN_STATES(new_state))
     end
-    LOGGER.write_log("Flight state changed to: " .. new_state)
+    XA_CABIN_LOGGER.write_log("Flight state changed to: " .. new_state)
 end
 
 function STATE.update_cabin_state()
