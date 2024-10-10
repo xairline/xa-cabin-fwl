@@ -4,15 +4,19 @@ local ANNOUNCEMENTS = {
 }
 function ANNOUNCEMENTS.play_sound(cabin_state)
     ANNOUNCEMENTS.stopSounds()
-    play_sound(ANNOUNCEMENTS.sounds[cabin_state])
-    XA_CABIN_LOGGER.write_log("Playing announcement for " .. ANNOUNCEMENTS.files[cabin_state])
+    if ANNOUNCEMENTS.sounds[cabin_state] then
+        play_sound(ANNOUNCEMENTS.sounds[cabin_state])
+        XA_CABIN_LOGGER.write_log("Playing announcement for cabin state: " .. cabin_state)
+    else
+        XA_CABIN_LOGGER.write_log("Error: No sound loaded for cabin state: " .. tostring(cabin_state))
+    end
 end
 
 function ANNOUNCEMENTS.stopSounds()
     if ANNOUNCEMENTS.sounds then
-        for i = 2, #XA_CABIN_CABIN_XA_CABIN_STATES do
-            if ANNOUNCEMENTS.sounds[XA_CABIN_CABIN_XA_CABIN_STATES[i]] then
-                stop_sound(ANNOUNCEMENTS.sounds[XA_CABIN_CABIN_XA_CABIN_STATES[i]])
+        for i = 2, #ANNOUNCEMENT_STATES do
+            if ANNOUNCEMENTS.sounds[ANNOUNCEMENT_STATES[i]] then
+                stop_sound(ANNOUNCEMENTS.sounds[ANNOUNCEMENT_STATES[i]])
             end
         end
     end
@@ -29,22 +33,22 @@ end
 
 function ANNOUNCEMENTS.loadSounds()
     ANNOUNCEMENTS.stopSounds()
-    -- ANNOUNCEMENTS.unloadAllSounds()
     local language = XA_CABIN_SETTINGS.announcement.language
     local accent = XA_CABIN_SETTINGS.announcement.accent
     local speaker = XA_CABIN_SETTINGS.announcement.speaker
-    XA_CABIN_LOGGER.dumpTable(XA_CABIN_CABIN_XA_CABIN_STATES)
-    for i = 2, #XA_CABIN_CABIN_XA_CABIN_STATES do
+    for i = 1, #ANNOUNCEMENT_STATES do
+        local cabin_state = ANNOUNCEMENT_STATES[i]
         local wav_file_path = SCRIPT_DIRECTORY ..
             "xa-cabin/announcements/" ..
-            XA_CABIN_CABIN_XA_CABIN_STATES[i] .. "/" .. language .. "-" .. accent .. "-" .. speaker .. ".wav"
+            cabin_state .. "/" .. language .. "-" .. accent .. "-" .. speaker .. ".wav"
         local tmp = io.open(wav_file_path, "r")
         if tmp == nil then
             XA_CABIN_LOGGER.write_log("File not found: " .. wav_file_path)
         else
+            tmp:close()
             local index = load_WAV_file(wav_file_path)
-            ANNOUNCEMENTS.sounds[XA_CABIN_CABIN_XA_CABIN_STATES[i]] = index
-            ANNOUNCEMENTS.files[XA_CABIN_CABIN_XA_CABIN_STATES[i]] = wav_file_path
+            ANNOUNCEMENTS.sounds[cabin_state] = index
+            ANNOUNCEMENTS.files[cabin_state] = wav_file_path
         end
     end
     XA_CABIN_LOGGER.dumpTable(ANNOUNCEMENTS.sounds)

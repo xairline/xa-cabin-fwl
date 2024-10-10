@@ -1,16 +1,16 @@
-XA_CABIN_VERSION = "v0.0.1"
-XA_CABIN_CABIN_XA_CABIN_STATES = {
-    "Pre-Boarding",
-    "Boarding",
-    "Boarding Complete",
-    "Safety Demonstration",
-    "Takeoff",
-    "Climb",
-    "Cruise",
-    "Prepare for Landing",
-    "Final Approach",
-    "Post Landing",
-    "Emergency"
+XA_CABIN_VERSION = "v0.1.0"
+ANNOUNCEMENT_STATES = {
+    "pre_boarding",
+    "boarding",
+    "boarding_complete",
+    "safety_demonstration",
+    "takeoff",
+    "climb",
+    "cruise",
+    "prepare_for_landing",
+    "final_approach",
+    "post_landing",
+    "emergency"
 }
 
 XA_CABIN_SETTINGS = {
@@ -73,4 +73,18 @@ XA_CABIN_PLANE_CONFIG = {
         operator = "==",
         threshold = 1
     },
+}
+
+DISPLAY_NAME_TO_STATE = {
+    ["Pre-Boarding"] = "pre_boarding",
+    ["Boarding"] = "boarding",
+    ["Boarding Complete"] = "boarding_complete",
+    ["Safety Demonstration"] = "safety_demonstration",
+    ["Takeoff"] = "takeoff",
+    ["Climb"] = "climb",
+    ["Cruise"] = "cruise",
+    ["Prepare for Landing"] = "prepare_for_landing",
+    ["Final Approach"] = "final_approach",
+    ["Post Landing"] = "post_landing",
+    ["Emergency"] = "emergency" -- Assuming you have this state defined
 }
