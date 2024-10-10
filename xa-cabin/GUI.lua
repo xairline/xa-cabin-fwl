@@ -57,14 +57,14 @@ function GUI.SimbriefInfo(win_width, win_height)
         imgui.TextUnformatted("Flight State: ")
         imgui.SameLine()
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("      " .. STATE.flight_phase)  -- Use the dynamically updated flight phase
+        imgui.TextUnformatted("      " .. XA_CABIN_STATES.flight_state.current_state)
         imgui.PopStyleColor()
         imgui.Spacing()
 
         imgui.TextUnformatted("Cabin State: ")
         imgui.SameLine()
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
-        imgui.TextUnformatted("       " .. STATE.cabin_state)  -- Use the dynamically updated cabin state
+        imgui.TextUnformatted("       " .. XA_CABIN_STATES.cabin_state.current_state)
         imgui.PopStyleColor()
         imgui.Spacing()
     end
@@ -164,45 +164,42 @@ function GUI.Announcements(win_width, win_height)
     if imgui.BeginChild("Announcements", win_width - 32, win_height * SECOND_ROW_HEIGHT_PERCENT) then
         imgui.SetWindowFontScale(1.2)
         if imgui.BeginTable("XA Cabin", 3) then
-            local total_announcements = #ANNOUNCEMENT_STATES
-            for i = 1, total_announcements, 3 do
+            for i = 2, #XA_CABIN_ANNOUNCEMENT_STATES, 3
+            do
+                imgui.Spacing()
+                imgui.Spacing()
+                imgui.Spacing()
+                imgui.Spacing()
                 imgui.TableNextRow()
-
-                -- First Column
                 imgui.TableNextColumn()
-                local state1 = ANNOUNCEMENT_STATES[i]
-                if state1 then
-                    local displayName1 = DISPLAY_NAME_TO_STATE[state1] or state1
-                    if imgui.Button(displayName1, win_width * 0.3 - 16, 50) then
-                        STATE.change_cabin_state(state1)
+                if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i], win_width * 0.3 - 16, 50) then
+                    local cabin_state = announcement_name_to_cabin_state(XA_CABIN_ANNOUNCEMENT_STATES[i])
+                    if cabin_state then
+                        change_cabin_state(cabin_state)
+                    else
+                        XA_CABIN_LOGGER.write_log("Failed to find cabin state for announcement: " .. XA_CABIN_ANNOUNCEMENT_STATES[i])
                     end
                 end
-
-                -- Second Column
                 imgui.TableNextColumn()
-                local state2 = ANNOUNCEMENT_STATES[i + 1]
-                if state2 then
-                    local displayName2 = DISPLAY_NAME_TO_STATE[state2] or state2
-                    if imgui.Button(displayName2, win_width * 0.3 - 16, 50) then
-                        STATE.change_cabin_state(state2)
-                    end
+                if XA_CABIN_ANNOUNCEMENT_STATES[i + 1] == nil then
+                    break
                 end
-
-                -- Third Column
+                if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
+                    ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i + 1])
+                end
                 imgui.TableNextColumn()
-                local state3 = ANNOUNCEMENT_STATES[i + 2]
-                if state3 then
-                    local displayName3 = DISPLAY_NAME_TO_STATE[state3] or state3
-                    if imgui.Button(displayName3, win_width * 0.3 - 16, 50) then
-                        STATE.change_cabin_state(state3)
-                    end
+
+                if XA_CABIN_ANNOUNCEMENT_STATES[i + 2] == nil then
+                    break
+                end
+                if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
+                    ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i + 2])
                 end
             end
-            imgui.EndTable()
         end
+        imgui.EndTable()
     end
     imgui.EndChild()
 end
-
 
 return GUI;
