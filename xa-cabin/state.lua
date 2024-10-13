@@ -1,360 +1,377 @@
-local STATE = {
+-- Assuming ANNOUNCEMENTS is part of a module, require it:
+ANNOUNCEMENTS = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/announcement.lua")
+STATE = {
     climb_counter = 0,
     cruise_counter = 0,
     descend_counter = 0,
-    bording_delay_counter = 0,
+    boarding_delay_counter = 0,
+    last_state_change_time = os.clock(), -- Reentrancy guard
+    debounce_threshold = 0, -- Seconds to wait between state changes
 }
 
+-- Initialize datarefs only once
 function STATE.initialize_states()
+    -- Initialize datarefs only once
     if XA_CABIN_DATAREFS.GS == nil then
         XA_CABIN_DATAREFS.GS = dataref_table('sim/flightmodel/position/groundspeed')
     end
     if XA_CABIN_DATAREFS.ALT_AGL == nil then
         XA_CABIN_DATAREFS.ALT_AGL = dataref_table('sim/flightmodel/position/y_agl')
     end
+    if XA_CABIN_DATAREFS.N1 == nil then
+        XA_CABIN_DATAREFS.N1 = dataref_table('sim/cockpit2/engine/indicators/N1_percent')
+    end
     if XA_CABIN_DATAREFS.ONGROUND == nil then
         XA_CABIN_DATAREFS.ONGROUND = dataref_table('sim/flightmodel/failures/onground_any')
     end
-
+    if XA_CABIN_DATAREFS.GEAR_DEPLOY == nil then
+        XA_CABIN_DATAREFS.GEAR_DEPLOY = dataref_table('sim/flightmodel2/gear/deploy_ratio')
+    end
+        -- Initialize GEAR_FORCE dataref
+    if XA_CABIN_DATAREFS.GEAR_FORCE == nil then
+        XA_CABIN_LOGGER.write_log("Initializing GEAR_FORCE Dataref.")
+        XA_CABIN_DATAREFS.GEAR_FORCE = dataref_table('sim/flightmodel/forces/fnrml_gear')
+    end
+    if XA_CABIN_DATAREFS.VS == nil then
+        XA_CABIN_LOGGER.write_log("Initializing VS Dataref.")
+        XA_CABIN_DATAREFS.VS = dataref_table('sim/flightmodel/position/vh_ind_fpm')
+    end
+    
     local on_ground = XA_CABIN_DATAREFS.ONGROUND[0] == 1
     local gs = XA_CABIN_DATAREFS.GS[0]
     local alt_agl = XA_CABIN_DATAREFS.ALT_AGL[0]
-
-    -- Check if the aircraft is on the runway (e.g., ground speed zero, on ground, at runway heading)
-    if on_ground and gs < 1 and alt_agl < 10 then
-        -- Aircraft is on the ground, but we need to determine if it's at the gate or runway
-        -- For simplicity, let's assume that if the door is closed, we're on the runway ready for takeoff
-        if not HELPERS.is_door_open() then
-            -- Set flight state to 'takeoff'
-            XA_CABIN_STATES.flight_state = {
-                parked = false,
-                taxi_out = false,
-                takeoff = true,
-                climb = false,
-                cruise = false,
-                descent = false,
-                approach = false,
-                taxi_in = false,
-                current_state = "takeoff"
-            }
-            XA_CABIN_LOGGER.write_log("Flight started from the runway. Setting flight state to 'takeoff'.")
-
-            -- Set cabin state to 'takeoff' or the appropriate state
-            XA_CABIN_STATES.cabin_state = {
-                pre_boarding = false,
-                boarding = false,
-                boarding_complete = false,
-                safety_demonstration = false,
-                takeoff = true,
-                climb = false,
-                cruise = false,
-                prepare_for_landing = false,
-                final_approach = false,
-                post_landing = false,
-                current_state = "takeoff"
-            }
-            XA_CABIN_LOGGER.write_log("Cabin state set to 'takeoff' due to runway start.")
-        else
-            -- If door is open, assume we're at the gate
-            XA_CABIN_LOGGER.write_log("Door is open. Assuming aircraft is parked at the gate.")
+    local engine_n1 = XA_CABIN_DATAREFS.N1[0]
+    local gear_deploy = XA_CABIN_DATAREFS.GEAR_DEPLOY[0] -- Gear deployment ratio (1 = down, 0 = up)
+    
+    -- Determine initial flight phase based on conditions
+    if on_ground then
+        if gs < 1 and engine_n1 < 30 and alt_agl < 10 then
+            -- Aircraft is parked
+            if HELPERS.is_door_open() then
+                XA_CABIN_LOGGER.write_log("Aircraft is parked at the gate.")
+                STATE.change_flight_state("parked", "Aircraft is on the ground, engines off, doors open")
+                STATE.change_cabin_state("pre_boarding", "Doors are open at the gate")
+            else
+                XA_CABIN_LOGGER.write_log("Aircraft is parked on the runway.")
+                STATE.change_flight_state("parked", "Aircraft is on the ground, engines off, doors closed")
+                STATE.change_cabin_state("boarding_complete", "Ready for taxi")
+            end
+        elseif gs > 1 and gs < 30 then
+            -- Aircraft is taxiing
+            XA_CABIN_LOGGER.write_log("Aircraft is taxiing.")
+            STATE.change_flight_state("taxi_out", "Ground speed indicates taxi phase")
+            STATE.change_cabin_state("safety_demonstration", "Safety demo during taxi")
+        elseif gs > 30 and alt_agl < 10 and engine_n1 > 60 then
+            -- Aircraft is preparing for takeoff (on the runway)
+            XA_CABIN_LOGGER.write_log("Aircraft is on the runway, preparing for takeoff.")
+            STATE.change_flight_state("takeoff", "High N1 and high ground speed, preparing for takeoff")
+            STATE.change_cabin_state("takeoff", "Takeoff initiated")
         end
+    else
+        -- Aircraft is in the air
+        if alt_agl > 800 and gs > 50 then
+            -- Aircraft is in flight, at cruise
+            XA_CABIN_LOGGER.write_log("Aircraft is in cruise flight.")
+            STATE.change_flight_state("cruise", "Aircraft is in flight, stable altitude")
+            STATE.change_cabin_state("cruise", "Cruise altitude reached")
+        elseif alt_agl < 800 and gear_deploy > 0 then
+            -- Aircraft is descending for approach
+            XA_CABIN_LOGGER.write_log("Aircraft is in approach phase.")
+            STATE.change_flight_state("approach", "Aircraft descending, gear deployed")
+            STATE.change_cabin_state("prepare_for_landing", "Approach started, preparing for landing")
+        elseif alt_agl < 100 and gear_deploy > 0 then
+            -- Aircraft is landing
+            XA_CABIN_LOGGER.write_log("Aircraft is landing.")
+            STATE.change_flight_state("landing", "Low altitude, gear deployed, preparing to land")
+        end
+    end
+    
+    -- Call the original door and system checks
+    XA_CABIN_LOGGER.write_log("Flight phase initialization complete.")
+
+    -- Play the appropriate announcement after initialization
+    local announcement_name = cabin_state_to_announcement_name(XA_CABIN_STATES.cabin_state.current_state)
+    if announcement_name then
+        ANNOUNCEMENTS.play_sound(announcement_name)
+    else
+        XA_CABIN_LOGGER.write_log("No announcement found for cabin state: " .. XA_CABIN_STATES.cabin_state.current_state)
     end
 end
 
-function change_flight_state(new_state)
-    if XA_CABIN_STATES.flight_state[new_state] == nil then
-        logMsg("Invalid flight state: " .. new_state)
-        return
+function STATE.change_flight_state(new_state, condition_reason)
+    local current_time = os.clock()
+    XA_CABIN_LOGGER.write_log("Attempting to change flight state. Current state: " .. XA_CABIN_STATES.flight_state.current_state .. ", New state: " .. new_state)
+
+    if XA_CABIN_STATES.flight_state.current_state ~= new_state and (current_time - STATE.last_state_change_time > STATE.debounce_threshold) then
+        XA_CABIN_LOGGER.write_log("Flight state changed to: " .. new_state .. ". Reason: " .. condition_reason)
+        XA_CABIN_STATES.flight_state[XA_CABIN_STATES.flight_state.current_state] = false
+        XA_CABIN_STATES.flight_state[new_state] = true
+        XA_CABIN_STATES.flight_state.current_state = new_state
+        STATE.last_state_change_time = current_time  -- Update debounce timer here
+    else
+        XA_CABIN_LOGGER.write_log("Debounce active or state unchanged. Skipping flight state change. Time since last change: " .. (current_time - STATE.last_state_change_time) .. " seconds.")
     end
-    XA_CABIN_STATES.flight_state[XA_CABIN_STATES.flight_state.current_state] = false
-    XA_CABIN_STATES.flight_state[new_state] = true
-    XA_CABIN_STATES.flight_state.current_state = new_state
-    XA_CABIN_LOGGER.write_log("Flight state changed to: " .. new_state)
 end
 
 function STATE.update_flight_state()
-    -- process PARKED state
     if XA_CABIN_STATES.flight_state.current_state == "parked" then
-        if XA_CABIN_DATAREFS.GS == nil then
-            XA_CABIN_DATAREFS.GS = dataref_table('sim/flightmodel/position/groundspeed')
-        end
-        if XA_CABIN_DATAREFS.GEAR_FORCE == nil then
-            XA_CABIN_DATAREFS.GEAR_FORCE = dataref_table('sim/flightmodel/forces/fnrml_gear')
-        end
-
         if XA_CABIN_DATAREFS.GS[0] > 5 / 1.9 and XA_CABIN_DATAREFS.GEAR_FORCE[0] > 1 then
-            change_flight_state("taxi_out")
+            STATE.change_flight_state("taxi_out", "Ground speed > 5 and gear force > 1 (start taxi)")
+            STATE.change_cabin_state("safety_demonstration", "Safety demo starts with taxi")
         end
         return
     end
 
-    -- process TAXI_OUT state
     if XA_CABIN_STATES.flight_state.current_state == "taxi_out" then
         if XA_CABIN_DATAREFS.N1 == nil then
             XA_CABIN_DATAREFS.N1 = dataref_table('sim/cockpit2/engine/indicators/N1_percent')
         end
 
-        if XA_CABIN_DATAREFS.N1[0] > 75 then
-            change_flight_state("takeoff")
+        if XA_CABIN_DATAREFS.N1[0] > 60 then
+            STATE.change_flight_state("takeoff", "N1 > 60% (starting takeoff)")
+            STATE.change_cabin_state("takeoff", "Takeoff initiated")
         end
         return
     end
 
-    -- process TAKEOFF state
     if XA_CABIN_STATES.flight_state.current_state == "takeoff" then
         if XA_CABIN_DATAREFS.VS == nil then
+            XA_CABIN_LOGGER.write_log("Initializing Vertical Speed (VS) Dataref")
             XA_CABIN_DATAREFS.VS = dataref_table('sim/flightmodel/position/vh_ind_fpm')
         end
         if XA_CABIN_DATAREFS.GEAR_FORCE == nil then
+            XA_CABIN_LOGGER.write_log("Initializing Gear Force Dataref")
             XA_CABIN_DATAREFS.GEAR_FORCE = dataref_table('sim/flightmodel/forces/fnrml_gear')
         end
 
+        -- Log the values of VS and GEAR_FORCE for debugging
+        XA_CABIN_LOGGER.write_log("Current Vertical Speed (VS): " .. tostring(XA_CABIN_DATAREFS.VS[0]))
+        XA_CABIN_LOGGER.write_log("Current Gear Force: " .. tostring(XA_CABIN_DATAREFS.GEAR_FORCE[0]))
+
+        -- Check if the vertical speed is high enough and the gear force is low (indicating flight)
         if XA_CABIN_DATAREFS.VS[0] > 200 and XA_CABIN_DATAREFS.GEAR_FORCE[0] < 1 then
-            change_flight_state("climb")
+            local reason = "Vertical Speed is above 200 fpm and Gear Force is below 1"
+            XA_CABIN_LOGGER.write_log("Conditions met for climb: " .. reason)
+            STATE.change_flight_state("climb", reason)
+            STATE.change_cabin_state("climb", reason)
+        else
+            XA_CABIN_LOGGER.write_log("Conditions not met for climb.")
         end
         return
     end
 
-    -- process CLIMB state
     if XA_CABIN_STATES.flight_state.current_state == "climb" then
-        if XA_CABIN_DATAREFS.VS == nil then
-            XA_CABIN_DATAREFS.VS = dataref_table('sim/flightmodel/position/vh_ind_fpm')
-        end
+        local vs = XA_CABIN_DATAREFS.VS[0]
 
-        if XA_CABIN_DATAREFS.VS[0] > -500 and XA_CABIN_DATAREFS.VS[0] < 500 then
-            STATE.cruise_counter = STATE.cruise_counter + 1
+        if vs > -500 and vs < 500 then
+            STATE.cruise_counter = math.min(STATE.cruise_counter + 1, 30)
         else
             STATE.cruise_counter = 0
         end
 
-        if XA_CABIN_DATAREFS.VS[0] < -500 then
-            STATE.descend_counter = STATE.descend_counter + 1
+        if vs < -500 then
+            STATE.descend_counter = math.min(STATE.descend_counter + 1, 30)
         else
             STATE.descend_counter = 0
         end
 
         if STATE.cruise_counter > 15 then
-            change_flight_state("cruise")
+            STATE.change_flight_state("cruise", "Vertical Speed stabilized near 0")
+            STATE.change_cabin_state("cruise", "Aircraft reached cruise altitude")
             return
         end
 
-        if STATE.descend_counter > 15 then
-            change_flight_state("descent")
+        if STATE.descend_counter > 10 then
+            STATE.change_flight_state("descent", "Vertical Speed negative for extended period (starting descent)")
+            STATE.change_cabin_state("prepare_for_landing", "Descent started")
             return
         end
         return
     end
 
-    -- process CRUISE state
     if XA_CABIN_STATES.flight_state.current_state == "cruise" then
-        if XA_CABIN_DATAREFS.VS == nil then
-            XA_CABIN_DATAREFS.VS = dataref_table('sim/flightmodel/position/vh_ind_fpm')
-        end
+        local vs = XA_CABIN_DATAREFS.VS[0]
 
-        if XA_CABIN_DATAREFS.VS[0] > 500 then
-            STATE.climb_counter = STATE.climb_counter + 1
+        if vs > 500 then
+            STATE.climb_counter = math.min(STATE.climb_counter + 1, 30)
         else
             STATE.climb_counter = 0
         end
 
-        if XA_CABIN_DATAREFS.VS[0] < -500 then
-            STATE.descend_counter = STATE.descend_counter + 1
+        if vs < -500 then
+            STATE.descend_counter = math.min(STATE.descend_counter + 1, 30)
         else
             STATE.descend_counter = 0
         end
 
         if STATE.climb_counter > 30 then
-            change_flight_state("climb")
+            STATE.change_flight_state("climb", "Vertical Speed > 500 (resuming climb)")
+            STATE.change_cabin_state("climb", "Resuming climb")
             return
         end
 
         if STATE.descend_counter > 30 then
-            change_flight_state("descent")
+            STATE.change_flight_state("descent", "Vertical Speed < -500 (starting descent)")
+            STATE.change_cabin_state("prepare_for_landing", "Preparing for descent")
             return
         end
         return
     end
 
-    -- process DESCENT state
     if XA_CABIN_STATES.flight_state.current_state == "descent" then
-        if XA_CABIN_DATAREFS.VS == nil then
-            XA_CABIN_DATAREFS.VS = dataref_table('sim/flightmodel/position/vh_ind_fpm')
-        end
-        if XA_CABIN_DATAREFS.AGL == nil then
-            XA_CABIN_DATAREFS.AGL = dataref_table('sim/flightmodel/position/y_agl')
-        end
-        if XA_CABIN_DATAREFS.GEAR_FORCE == nil then
-            XA_CABIN_DATAREFS.GEAR_FORCE = dataref_table('sim/flightmodel/forces/fnrml_gear')
-        end
+        local vs = XA_CABIN_DATAREFS.VS[0]
+        local agl = XA_CABIN_DATAREFS.ALT_AGL[0]
+        local gear_force = XA_CABIN_DATAREFS.GEAR_FORCE[0]
 
-        if XA_CABIN_DATAREFS.VS[0] > 500 then
-            STATE.climb_counter = STATE.climb_counter + 1
+        if vs > 500 then
+            STATE.climb_counter = math.min(STATE.climb_counter + 1, 30)
         else
             STATE.climb_counter = 0
         end
 
-        if XA_CABIN_DATAREFS.VS[0] < 500 and XA_CABIN_DATAREFS.VS[0] > -500 then
-            STATE.cruise_counter = STATE.cruise_counter + 1
+        if vs < 500 and vs > -500 then
+            STATE.cruise_counter = math.min(STATE.cruise_counter + 1, 30)
         else
             STATE.cruise_counter = 0
         end
 
         if STATE.climb_counter > 15 then
-            change_flight_state("climb")
+            STATE.change_flight_state("climb", "Climb conditions met during descent")
+            STATE.change_cabin_state("climb", "Returning to climb")
             return
         end
 
         if STATE.cruise_counter > 15 then
-            change_flight_state("cruise")
+            STATE.change_flight_state("cruise", "Cruise conditions met during descent")
+            STATE.change_cabin_state("cruise", "Returning to cruise")
             return
         end
 
-        if XA_CABIN_DATAREFS.AGL[0] < 800 and XA_CABIN_DATAREFS.GEAR_FORCE[0] < 5 and XA_CABIN_DATAREFS.VS[0] < -200 then
-            change_flight_state("approach")
-            return
+        if agl < 800 and gear_force < 5 and vs < -200 then
+            STATE.change_flight_state("approach", "Altitude < 800 AGL and descending")
         end
         return
     end
 
-    -- process APPROACH state
     if XA_CABIN_STATES.flight_state.current_state == "approach" then
-        if XA_CABIN_DATAREFS.GS == nil then
-            XA_CABIN_DATAREFS.GS = dataref_table('sim/flightmodel/position/groundspeed')
-        end
-        if XA_CABIN_DATAREFS.GEAR_FORCE == nil then
-            XA_CABIN_DATAREFS.GEAR_FORCE = dataref_table('sim/flightmodel/forces/fnrml_gear')
-        end
+        local gs = XA_CABIN_DATAREFS.GS[0]
+        local gear_force = XA_CABIN_DATAREFS.GEAR_FORCE[0]
 
-        if XA_CABIN_DATAREFS.GS[0] < 50 / 1.9 and XA_CABIN_DATAREFS.GEAR_FORCE[0] > 10 then
-            change_flight_state("taxi_in")
+        if gs < 50 / 1.9 and gear_force > 10 then
+            STATE.change_flight_state("taxi_in", "Groundspeed < 50 and gear force high (landing complete)")
         end
         return
     end
 
-    -- process TAXI_IN state
     if XA_CABIN_STATES.flight_state.current_state == "taxi_in" then
-        if XA_CABIN_DATAREFS.GS == nil then
-            XA_CABIN_DATAREFS.GS = dataref_table('sim/flightmodel/position/groundspeed')
-        end
-        if XA_CABIN_DATAREFS.N1 == nil then
-            XA_CABIN_DATAREFS.N1 = dataref_table('sim/cockpit2/engine/indicators/N1_percent')
-        end
+        local gs = XA_CABIN_DATAREFS.GS[0]
+        local n1 = XA_CABIN_DATAREFS.N1[0]
 
-        if XA_CABIN_DATAREFS.GS[0] < 1 / 1.9 and XA_CABIN_DATAREFS.N1[0] > 15 then
-            change_flight_state("parked")
+        if gs < 1 / 1.9 and n1 > 15 then
+            STATE.change_flight_state("parked", "Aircraft stopped after landing")
         end
         return
     end
 end
 
-function change_cabin_state(new_state)
-    if XA_CABIN_STATES.cabin_state[new_state] == nil then
-        logMsg("Invalid Cabin state: " .. new_state)
+function STATE.change_cabin_state(new_state, condition_reason)
+    condition_reason = condition_reason or "Unknown reason"
+    if XA_CABIN_STATES.cabin_state.current_state == new_state then
+        XA_CABIN_LOGGER.write_log("Cabin state is already " .. new_state .. ". No change needed.")
         return
     end
-    XA_CABIN_STATES.cabin_state[XA_CABIN_STATES.cabin_state.current_state] = false
-    XA_CABIN_STATES.cabin_state[new_state] = true
-    XA_CABIN_STATES.cabin_state.current_state = new_state
-    if XA_CABIN_SETTINGS.mode.automated then
-        local announcement_name = cabin_state_to_announcement_name(new_state)
-        if announcement_name then
-            ANNOUNCEMENTS.play_sound(announcement_name)
-            XA_CABIN_LOGGER.write_log("Playing announcement: " .. announcement_name)
-        else
-            XA_CABIN_LOGGER.write_log("No announcement found for cabin state: " .. new_state)
+
+    local current_time = os.clock()
+
+    if (current_time - STATE.last_state_change_time > STATE.debounce_threshold) then
+        XA_CABIN_LOGGER.write_log("Cabin state changing to: " .. new_state .. ". Reason: " .. condition_reason)
+        XA_CABIN_STATES.cabin_state[XA_CABIN_STATES.cabin_state.current_state] = false
+        XA_CABIN_STATES.cabin_state[new_state] = true
+        XA_CABIN_STATES.cabin_state.current_state = new_state
+        STATE.last_state_change_time = current_time
+
+        if XA_CABIN_SETTINGS.mode.automated then
+            local announcement_name = cabin_state_to_announcement_name(new_state)
+            if announcement_name then
+                ANNOUNCEMENTS.stopSounds()
+                ANNOUNCEMENTS.play_sound(announcement_name)
+                XA_CABIN_LOGGER.write_log("Playing announcement: " .. announcement_name)
+            else
+                XA_CABIN_LOGGER.write_log("No announcement found for cabin state: " .. new_state)
+            end
         end
+    else
+        XA_CABIN_LOGGER.write_log("Debounce active. Skipping cabin state change to: " .. new_state)
     end
-    XA_CABIN_LOGGER.write_log("Cabin state changed to: " .. new_state)
 end
 
 function STATE.update_cabin_state()
     if XA_CABIN_STATES.cabin_state.current_state == "pre_boarding" then
-        if HELPERS.is_door_open() and XA_CABIN_STATES.flight_state.parked then
-            STATE.bording_delay_counter = STATE.bording_delay_counter + 1
-
-            -- Generate and store the random delay threshold once
-            if not STATE.boarding_delay_threshold then
-                STATE.boarding_delay_threshold = math.random(90, 120)
-                XA_CABIN_LOGGER.write_log("Boarding delay threshold set to: " .. STATE.boarding_delay_threshold)
-            end
-
-            -- Compare the counter against the stored threshold
-            if STATE.bording_delay_counter > STATE.boarding_delay_threshold then
-                change_cabin_state("boarding")
-                -- Reset counter and threshold for future use
-                STATE.bording_delay_counter = 0
-                STATE.boarding_delay_threshold = nil
-            end
-        else
-            -- Reset counter and threshold if conditions are not met
-            STATE.bording_delay_counter = 0
-            STATE.boarding_delay_threshold = nil
+        if not HELPERS.is_door_open() and XA_CABIN_STATES.cabin_state.current_state ~= "boarding_complete" then
+            XA_CABIN_LOGGER.write_log("Doors closed during pre-boarding. Transitioning to 'boarding_complete'.")
+            STATE.change_cabin_state("boarding_complete", "Doors closed during pre-boarding")
         end
         return
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "boarding" then
-        if not HELPERS.is_door_open() and not XA_CABIN_STATES.flight_state.taxi_out then
-            change_cabin_state("boarding_complete")
+        if not HELPERS.is_door_open() then
+            XA_CABIN_LOGGER.write_log("Doors closed before boarding completed. Transitioning to 'boarding_complete'.")
+            STATE.change_cabin_state("boarding_complete", "Doors closed before boarding completed")
         end
         return
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "boarding_complete" then
         if XA_CABIN_STATES.flight_state.taxi_out then
-            change_cabin_state("safety_demonstration")
+            STATE.change_cabin_state("safety_demonstration", "Taxi started, safety demo begins")
         end
         return
+    end
+
+    if XA_CABIN_STATES.flight_state.current_state == "takeoff" and 
+       XA_CABIN_STATES.cabin_state.current_state == "safety_demonstration" then
+        STATE.change_cabin_state("takeoff", "Takeoff initiated, safety demo completed")
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "safety_demonstration" then
-        if HELPERS.is_landing_ligths_on() and XA_CABIN_STATES.flight_state.taxi_out then
-            change_cabin_state("takeoff")
-        end
-        return
-    end
-
-    if XA_CABIN_STATES.cabin_state.current_state == "takeoff" then
-        if XA_CABIN_DATAREFS.AGL == nil then
-            XA_CABIN_DATAREFS.AGL = dataref_table('sim/flightmodel/position/y_agl')
-        end
-        if XA_CABIN_STATES.flight_state.climb and XA_CABIN_DATAREFS.AGL[0] > 1000 then
-            change_cabin_state("climb")
+        if ANNOUNCEMENTS.is_safety_demo_done then
+            STATE.change_cabin_state("takeoff", "Safety demo completed")
         end
         return
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "climb" then
         if XA_CABIN_STATES.flight_state.cruise then
-            change_cabin_state("cruise")
+            STATE.change_cabin_state("cruise", "Aircraft reached cruise altitude")
         end
         return
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "cruise" then
         if XA_CABIN_STATES.flight_state.descent then
-            change_cabin_state("prepare_for_landing")
+            STATE.change_cabin_state("prepare_for_landing", "Descent started")
         end
         return
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "prepare_for_landing" then
         if XA_CABIN_STATES.flight_state.approach then
-            change_cabin_state("final_approach")
+            STATE.change_cabin_state("final_approach", "Final approach started")
         end
         return
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "final_approach" then
         if XA_CABIN_STATES.flight_state.taxi_in then
-            change_cabin_state("post_landing")
+            STATE.change_cabin_state("post_landing", "Landing completed")
         end
         return
     end
 
     if XA_CABIN_STATES.cabin_state.current_state == "post_landing" then
         if XA_CABIN_STATES.flight_state.parked then
-            change_cabin_state("pre_boarding")
+            STATE.change_cabin_state("pre_boarding", "Aircraft parked, ready for next boarding")
         end
         return
     end
@@ -371,13 +388,13 @@ function announcement_name_to_cabin_state(announcement_name)
         "cruise",
         "prepare_for_landing",
         "final_approach",
-        "post_landing"
+        "post_landing",
+        "emergency"
     }
 
-    for _, cabin_state in ipairs(cabin_states) do
-        local ann_name = cabin_state_to_announcement_name(cabin_state)
+    for index, ann_name in ipairs(XA_CABIN_ANNOUNCEMENT_STATES) do
         if ann_name == announcement_name then
-            return cabin_state
+            return cabin_states[index]
         end
     end
 
@@ -386,29 +403,30 @@ function announcement_name_to_cabin_state(announcement_name)
 end
 
 function cabin_state_to_announcement_name(cabin_state)
-    if cabin_state == "pre_boarding" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[1]
-    elseif cabin_state == "boarding" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[2]
-    elseif cabin_state == "boarding_complete" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[3]
-    elseif cabin_state == "safety_demonstration" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[4]
-    elseif cabin_state == "takeoff" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[5]
-    elseif cabin_state == "climb" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[6]
-    elseif cabin_state == "cruise" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[7]
-    elseif cabin_state == "prepare_for_landing" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[8]
-    elseif cabin_state == "final_approach" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[9]
-    elseif cabin_state == "post_landing" then
-        return XA_CABIN_ANNOUNCEMENT_STATES[10]
+    local cabin_states = {
+        "pre_boarding",
+        "boarding",
+        "boarding_complete",
+        "safety_demonstration",
+        "takeoff",
+        "climb",
+        "cruise",
+        "prepare_for_landing",
+        "final_approach",
+        "post_landing",
+        "emergency"
+    }
+
+    for index, state in ipairs(cabin_states) do
+        if state == cabin_state then
+            return XA_CABIN_ANNOUNCEMENT_STATES[index]
+        end
     end
+
+    XA_CABIN_LOGGER.write_log("Unknown cabin state: " .. tostring(cabin_state))
+    return nil
 end
-
+ANNOUNCEMENTS.loadSounds()
 STATE.initialize_states()
-
+ANNOUNCEMENTS.loadSounds()
 return STATE

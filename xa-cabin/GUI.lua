@@ -159,47 +159,63 @@ function GUI.Configuration(win_width, win_height)
     end
     imgui.EndChild()
 end
-
 function GUI.Announcements(win_width, win_height)
     if imgui.BeginChild("Announcements", win_width - 32, win_height * SECOND_ROW_HEIGHT_PERCENT) then
         imgui.SetWindowFontScale(1.2)
         if imgui.BeginTable("XA Cabin", 3) then
-            for i = 2, #XA_CABIN_ANNOUNCEMENT_STATES, 3
-            do
+            for i = 1, #XA_CABIN_ANNOUNCEMENT_STATES, 3 do
                 imgui.Spacing()
                 imgui.Spacing()
                 imgui.Spacing()
                 imgui.Spacing()
                 imgui.TableNextRow()
+
+                -- First Column
                 imgui.TableNextColumn()
-                if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i], win_width * 0.3 - 16, 50) then
-                    local cabin_state = announcement_name_to_cabin_state(XA_CABIN_ANNOUNCEMENT_STATES[i])
-                    if cabin_state then
-                        change_cabin_state(cabin_state)
-                    else
-                        XA_CABIN_LOGGER.write_log("Failed to find cabin state for announcement: " .. XA_CABIN_ANNOUNCEMENT_STATES[i])
+                if XA_CABIN_ANNOUNCEMENT_STATES[i] then
+                    if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i], win_width * 0.3 - 16, 50) then
+                        local cabin_state = announcement_name_to_cabin_state(XA_CABIN_ANNOUNCEMENT_STATES[i])
+                        if cabin_state then
+                            --STATE.change_cabin_state(cabin_state)
+                            ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i])
+                        else
+                            XA_CABIN_LOGGER.write_log("Failed to find cabin state for announcement: " .. XA_CABIN_ANNOUNCEMENT_STATES[i])
+                        end
                     end
                 end
-                imgui.TableNextColumn()
-                if XA_CABIN_ANNOUNCEMENT_STATES[i + 1] == nil then
-                    break
-                end
-                if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-                    ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i + 1])
-                end
-                imgui.TableNextColumn()
 
-                if XA_CABIN_ANNOUNCEMENT_STATES[i + 2] == nil then
-                    break
+                -- Second Column
+                imgui.TableNextColumn()
+                if XA_CABIN_ANNOUNCEMENT_STATES[i + 1] then
+                    if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i + 1], win_width * 0.3 - 16, 50) then
+                        local cabin_state = announcement_name_to_cabin_state(XA_CABIN_ANNOUNCEMENT_STATES[i + 1])
+                        if cabin_state then
+                            --STATE.change_cabin_state(cabin_state)
+                            ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i+1])
+                        else
+                            XA_CABIN_LOGGER.write_log("Failed to find cabin state for announcement: " .. XA_CABIN_ANNOUNCEMENT_STATES[i + 1])
+                        end
+                    end
                 end
-                if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-                    ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i + 2])
+
+                -- Third Column
+                imgui.TableNextColumn()
+                if XA_CABIN_ANNOUNCEMENT_STATES[i + 2] then
+                    if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i + 2], win_width * 0.3 - 16, 50) then
+                        local cabin_state = announcement_name_to_cabin_state(XA_CABIN_ANNOUNCEMENT_STATES[i + 2])
+                        if cabin_state then
+                            --STATE.change_cabin_state(cabin_state)
+                            ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i+2])
+                        else
+                            XA_CABIN_LOGGER.write_log("Failed to find cabin state for announcement: " .. XA_CABIN_ANNOUNCEMENT_STATES[i + 2])
+                        end
+                    end
                 end
             end
+            imgui.EndTable()
         end
-        imgui.EndTable()
+        imgui.EndChild()
     end
-    imgui.EndChild()
 end
 
 return GUI;

@@ -1,29 +1,36 @@
+-- xa-cabin.lua
+
+-- Define SCRIPT_DIRECTORY if not already defined
+if not SCRIPT_DIRECTORY then
+    SCRIPT_DIRECTORY = debug.getinfo(1, "S").source:match("@?(.*/)")
+end
+
+-- Load required scripts
 LIP = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/LIP.lua")
 XA_CABIN_LOGGER = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/logging.lua")
-dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
 HELPERS = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/helpers.lua")
+
+-- Load settings and plane config first
+XA_CABIN_SETTINGS = LIP.load(SCRIPT_DIRECTORY .. "xa-cabin.ini")
+
+-- Load globals after settings
+dofile(SCRIPT_DIRECTORY .. "/xa-cabin/globals.lua")
+
+-- Now load scripts that depend on globals
 local STATE = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/state.lua")
 local GUI = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/GUI.lua")
+
+-- Finally, load announcements
 ANNOUNCEMENTS = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/announcement.lua")
-
-
---[[
-IMGUI Blank Template
-Author: Joe Kipfer 2019-06-06
-Use in conjuction with Folko's IMGUI Demo script for some great examples and explaination.
-When Using IMGUI Demo script mentioned above, don't forget to put the imgui demo.jpg in with it or
-you'll get an error.
-]]
-
+-- Initialize Announcements
+ANNOUNCEMENTS.loadSounds()
+-- Check for imgui support
 if not SUPPORTS_FLOATING_WINDOWS then
-    -- to make sure the script doesn't stop with old FlyWithLua versions
     logMsg("imgui not supported by your FlyWithLua version")
     return
 end
------------------------------------Variables go here--------------------------------------------
---Set you variables here, datarefs, etc...
-XA_CABIN_SETTINGS = LIP.load(SCRIPT_DIRECTORY .. "xa-cabin.ini")
--- check if file exists, if not, create it
+
+-- Check if plane config file exists, if not, create it
 local plane_config_file_path = AIRCRAFT_PATH .. "/xa-cabin.ini"
 
 local plane_config_file = io.open(plane_config_file_path, "r")
@@ -31,9 +38,11 @@ if plane_config_file == nil then
     XA_CABIN_LOGGER.write_log("Creating new plane config file")
     LIP.save(plane_config_file_path, XA_CABIN_PLANE_CONFIG)
 end
+
 XA_CABIN_PLANE_CONFIG = LIP.load(AIRCRAFT_PATH .. "/xa-cabin.ini")
+
+-- Handle potential legacy config
 if XA_CABIN_PLANE_CONFIG.RWY_LIGHTS ~= nil then
-    XA_CABIN_PLANE_CONFIG["LANDING_LIGHTS"] = {}
     XA_CABIN_PLANE_CONFIG["LANDING_LIGHTS"] = XA_CABIN_PLANE_CONFIG.LANDING_LIGHTS
     XA_CABIN_PLANE_CONFIG.RWY_LIGHTS = nil
     LIP.save(AIRCRAFT_PATH .. "/xa-cabin.ini", XA_CABIN_PLANE_CONFIG)
@@ -42,15 +51,12 @@ end
 
 XA_CABIN_LOGGER.dumpTable(XA_CABIN_PLANE_CONFIG)
 XA_CABIN_LOGGER.write_log("Loaded plane config file")
+
+-- Load Simbrief script
 SIMBRIEF = dofile(SCRIPT_DIRECTORY .. "/xa-cabin/simbrief.lua")
 
-
-
-
-
--------------------------------------Build Your GUI Here----------------------------------------
-
-function xa_cabin_on_build(xa_cabin_wnd, x, y) --<-- your GUI code goes in this section.
+-- GUI Building Function
+function xa_cabin_on_build(xa_cabin_wnd, x, y)
     local win_width = imgui.GetWindowWidth()
     local win_height = imgui.GetWindowHeight()
     imgui.Columns(2)
@@ -69,27 +75,18 @@ function xa_cabin_on_build(xa_cabin_wnd, x, y) --<-- your GUI code goes in this 
     imgui.Spacing()
 
     GUI.Announcements(win_width, win_height)
-end -- function xa_cabin_on_build
+end
 
--------------------------------------------------------------------------------------------------
+-- Show/Hide Window Functions
+xa_cabin_wnd = nil
 
-
-
-
-
-
-
--------------------Show Hide Window Section with Toggle functionaility---------------------------
-
-xa_cabin_wnd = nil           -- flag for the show_wnd set to nil so that creation below can happen - float_wnd_create
-
-function xa_cabin_show_wnd() -- This is called when user toggles window on/off, if the next toggle is for ON
+function xa_cabin_show_wnd()
     xa_cabin_wnd = float_wnd_create(680, 500, 1, true)
     float_wnd_set_title(xa_cabin_wnd, "XA Cabin " .. XA_CABIN_VERSION)
     float_wnd_set_imgui_builder(xa_cabin_wnd, "xa_cabin_on_build")
 end
 
-function xa_cabin_hide_wnd() -- This is called when user toggles window on/off, if the next toggle is for OFF
+function xa_cabin_hide_wnd()
     if xa_cabin_wnd then
         float_wnd_destroy(xa_cabin_wnd)
     end
@@ -98,7 +95,7 @@ end
 xa_cabin_show_only_once = 0
 xa_cabin_hide_only_once = 0
 
-function toggle_xa_cabin_window() -- This is the toggle window on/off function
+function toggle_xa_cabin_window()
     xa_cabin_show_window = not xa_cabin_show_window
     if xa_cabin_show_window then
         if xa_cabin_show_only_once == 0 then
@@ -115,35 +112,11 @@ function toggle_xa_cabin_window() -- This is the toggle window on/off function
     end
 end
 
-------------------------------------------------------------------------------------------------
+-- Add Macro and Command
+add_macro("XA Cabin", "xa_cabin_show_wnd()", "xa_cabin_hide_wnd()", "activate")
+create_command("xa_cabin_menus/show_toggle", "open/close XA Cabin Menu window", "toggle_xa_cabin_window()", "", "")
 
-
-
-
-
-
-----"add_macro" - adds the option to the FWL macro menu in X-Plane
-----"create command" - creates a show/hide toggle command that calls the toggle_xa_cabin_window()
-add_macro("XA Cabin", "xa_cabin_show_wnd()",
-    "xa_cabin_hide_wnd()", "activate")
-create_command("xa_cabin_menus/show_toggle", "open/close XA Cabin Menu window",
-    "toggle_xa_cabin_window()", "", "")
-
---[[
-footnotes:  If changing color using PushStyleColor, here are common color codes:
-    BLACK       = 0xFF000000;
-    DKGRAY      = 0xFF444444;
-    GRAY        = 0xFF888888;
-    LTGRAY      = 0xFFCCCCCC;
-    WHITE       = 0xFFFFFFFF;
-    RED         = 0xFFFF0000;
-    GREEN       = 0xFF00FF00;
-    BLUE        = 0xFF0000FF;
-    YELLOW      = 0xFFFFFF00;
-    CYAN        = 0xFF00FFFF;
-    MAGENTA     = 0xFFFF00FF;
-    ]]
-
+-- Update State Function
 function xa_cabin_update_state()
     local status, err = pcall(STATE.update_flight_state)
     if not status then
@@ -156,5 +129,96 @@ function xa_cabin_update_state()
     end
 end
 
-ANNOUNCEMENTS.loadSounds()
+-- Function to Generate Announcements
+function generate_announcements()
+    local airline = SIMBRIEF["Airline"] or "Datanised Airlines"
+    local flight_number = SIMBRIEF["Callsign"] or "DAT01"
+    local destination = SIMBRIEF["DestName"] or "SBSP"
+    local eta_seconds = SIMBRIEF["Ete"] or 0
+    local eta_hours = math.floor(eta_seconds / 3600)
+    local eta_minutes = math.floor((eta_seconds % 3600) / 60)
+    local eta = string.format("%d hours and %d minutes", eta_hours, eta_minutes)
+
+    -- New variables for runway, altitude, etc.
+    local departure_runway = SIMBRIEF["OrigRwy"] or "Runway 01"
+    local arrival_runway = SIMBRIEF["DestRwy"] or "Runway 02"
+    local cruise_altitude = SIMBRIEF["Level"] or "35,000 ft"
+    local flight_time_hours = eta_hours
+    local flight_time_minutes = eta_minutes
+    local local_time_at_destination = SIMBRIEF["DestTime"] or "12:00 PM"
+    local aircraft_type = SIMBRIEF["AircraftType"] or "Boeing 737"
+    local local_time_sec_ref = dataref_table("sim/time/local_time_sec")
+    -- Function to classify time of day based on local time seconds
+    function get_time_of_day()
+        -- Get the time in seconds since midnight from the dataref
+        local time_in_seconds = local_time_sec_ref[0]
+        -- Convert seconds to hours (since midnight)
+        local time_in_hours = time_in_seconds / 3600
+
+        -- Determine time of day based on hours
+        if time_in_hours >= 5 and time_in_hours < 12 then
+            return "morning"
+        elseif time_in_hours >= 12 and time_in_hours < 18 then
+            return "afternoon"
+        else
+            return "night"
+        end
+    end
+    local time_of_day = get_time_of_day()
+    -- Language, accent, and speaker from configuration
+    local language = XA_CABIN_LANGUAGE or "en"
+    local accent = XA_CABIN_ACCENT or "gb"
+    local speaker = XA_CABIN_SETTINGS.announcement.speaker or "01"  -- Ensure 'speaker' is fetched
+
+    local python_script_path = SCRIPT_DIRECTORY .. "xa-cabin/generate_announcements.py"
+
+ -- Only generate audio if language is "custom"
+    if language == "custom" then
+        local python_script_path = SCRIPT_DIRECTORY .. "xa-cabin/generate_announcements.py"
+
+        -- Updated string.format with all the necessary variables passed to the Python script
+        local command = string.format(
+            '/usr/local/bin/python3 "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s"',
+            python_script_path,
+            airline,
+            flight_number,
+            destination,
+            eta,
+            language,
+            accent,
+            speaker,
+            departure_runway,
+            arrival_runway,
+            cruise_altitude,
+            flight_time_hours,
+            flight_time_minutes,
+            local_time_at_destination,
+            aircraft_type,
+            time_of_day
+        )
+
+        XA_CABIN_LOGGER.write_log("Generating announcements with command: " .. command)
+        -- Use io.popen to capture output from the Python script
+        -- local handle = io.popen(command)
+        -- local result = handle:read("*a")  -- Capture all output from the Python script
+        -- handle:close()
+
+        -- -- Print the captured output from the Python script
+        -- print("Command output: " .. result)
+
+        -- -- Log the output from the Python script (optional)
+        -- XA_CABIN_LOGGER.write_log("Announcement generation output: " .. result)
+
+        -- After generating announcements, load them
+        --ANNOUNCEMENTS.loadSounds()
+    else
+        XA_CABIN_LOGGER.write_log("Skipping announcement generation since language is not 'custom'.")
+    end
+end
+
+
+-- Generate Announcements on Initialization
+generate_announcements()
+-- Schedule State Updates
 do_often("xa_cabin_update_state()")
+
