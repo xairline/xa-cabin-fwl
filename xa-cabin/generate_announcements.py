@@ -135,8 +135,6 @@ def generate_tts(phase, text, language, accent, speaker):
         print(f"Removed existing file: {file_path}")
 
     # Generate the new audio file using OpenAI's streaming TTS API
-
-    # Generate the new audio file using OpenAI's streaming TTS API
     try:
         with client.audio.speech.with_streaming_response.create(
             model="tts-1",  # Or "tts-1-hd" for high-definition quality
