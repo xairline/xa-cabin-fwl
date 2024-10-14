@@ -108,9 +108,9 @@ To add a custom sound pack:
 
 ```
 [announcement]
-language=en
-accent=gb
-speaker=1
+language=english
+accent=nova
+speaker=custom
 ```
 
 ---
