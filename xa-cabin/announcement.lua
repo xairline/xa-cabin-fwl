@@ -1,6 +1,7 @@
 local debounce_duration = 5  -- Set debounce time (in seconds)
 local last_play_times = {}  -- Track last play times for all announcements
 local is_announcement_playing = false  -- Track if any announcement is currently playing
+--local announcement_volume = 0.5  -- Default volume set to 50%
 
 ANNOUNCEMENTS = {
     sounds = {},
@@ -29,39 +30,41 @@ local phases = {
 function ANNOUNCEMENTS.play_sound(announcement_name)
     local current_time = os.clock()
     ANNOUNCEMENTS.stopSounds()
+
     -- Check if another announcement is playing, and stop it before playing a new one
     if is_announcement_playing then
-        ANNOUNCEMENTS.stopSounds()  -- Stop the currently playing sound
+        ANNOUNCEMENTS.stopSounds()
         XA_CABIN_LOGGER.write_log("Stopping current sound to play: " .. announcement_name)
     end
-
-    -- Initialize last play time for the announcement if it doesn't exist
-    if not last_play_times[announcement_name] then
-        last_play_times[announcement_name] = 0
-    end
-
-    -- Debounce logic: Skip if debounce duration has not passed
-    if current_time - last_play_times[announcement_name] < debounce_duration then
-        XA_CABIN_LOGGER.write_log("Debounce active for announcement: " .. announcement_name .. ". Skipping.")
-        return
-    end
-
-    -- Update last play time and mark announcement as playing
-    last_play_times[announcement_name] = current_time
-    is_announcement_playing = true
 
     -- Continue playing the sound
     XA_CABIN_LOGGER.write_log("Attempting to play sound for: " .. announcement_name)
     local sound_handle = ANNOUNCEMENTS.sounds[announcement_name]
 
+    -- Ensure volume is not nil
+    if announcement_volume == nil then
+        announcement_volume = 0.5  -- Default to 50% if not set
+        XA_CABIN_LOGGER.write_log("Volume was nil. Defaulting to 0.5.")
+    end
+
+    -- Check if the sound is loaded and set the volume before playing
     if sound_handle then
         XA_CABIN_LOGGER.write_log("Playing sound file: " .. ANNOUNCEMENTS.files[announcement_name])
+
+        -- Log the current volume before setting it
+        XA_CABIN_LOGGER.write_log("Setting volume to: " .. tostring(announcement_volume))
+
+        -- Apply volume control
+        set_sound_gain(sound_handle, announcement_volume)  -- Ensure volume control is applied here
+        
+        -- Play the sound
         play_sound(sound_handle)
     else
         XA_CABIN_LOGGER.write_log("Sound not found for announcement: " .. announcement_name)
         is_announcement_playing = false  -- Reset the flag immediately if no sound is found
     end
 end
+
 
 function ANNOUNCEMENTS.on_sound_complete()
     is_announcement_playing = false  -- Reset the flag to allow the next announcement

@@ -166,14 +166,14 @@ function generate_announcements()
     end
     local time_of_day = get_time_of_day()
     -- Language, accent, and speaker from configuration
-    local language = XA_CABIN_LANGUAGE or "en"
-    local accent = XA_CABIN_ACCENT or "gb"
-    local speaker = XA_CABIN_SETTINGS.announcement.speaker or "01"  -- Ensure 'speaker' is fetched
+    local language = XA_CABIN_LANGUAGE or "english"
+    local accent = XA_CABIN_ACCENT or "Nova"
+    local speaker = XA_CABIN_SETTINGS.announcement.speaker or "custom"  -- Ensure 'speaker' is fetched
 
     local python_script_path = SCRIPT_DIRECTORY .. "xa-cabin/generate_announcements.py"
 
  -- Only generate audio if language is "custom"
-    if language == "custom" then
+    if speaker == "custom" then
         local python_script_path = SCRIPT_DIRECTORY .. "xa-cabin/generate_announcements.py"
 
         -- Updated string.format with all the necessary variables passed to the Python script
