@@ -209,47 +209,50 @@ function STATE.update_flight_state()
             STATE.change_cabin_state("climb", "Resuming climb")
             return
         end
-
-        if STATE.descend_counter > 30 then
+        XA_CABIN_LOGGER.write_log("Vertical Speed: " .. tostring(vs) .. ", Descent Counter: " .. tostring(STATE.descend_counter))
+        if STATE.descend_counter > 15 then
             STATE.change_flight_state("descent", "Vertical Speed < -500 (starting descent)")
             STATE.change_cabin_state("prepare_for_landing", "Preparing for descent")
+            
             return
         end
         return
     end
 
     if XA_CABIN_STATES.flight_state.current_state == "descent" then
-        local vs = XA_CABIN_DATAREFS.VS[0]
-        local agl = XA_CABIN_DATAREFS.ALT_AGL[0]
-        local gear_force = XA_CABIN_DATAREFS.GEAR_FORCE[0]
-
-        if vs > 500 then
-            STATE.climb_counter = math.min(STATE.climb_counter + 1, 30)
-        else
-            STATE.climb_counter = 0
-        end
-
-        if vs < 500 and vs > -500 then
-            STATE.cruise_counter = math.min(STATE.cruise_counter + 1, 30)
-        else
-            STATE.cruise_counter = 0
-        end
-
-        if STATE.climb_counter > 15 then
-            STATE.change_flight_state("climb", "Climb conditions met during descent")
-            STATE.change_cabin_state("climb", "Returning to climb")
-            return
-        end
-
-        if STATE.cruise_counter > 15 then
-            STATE.change_flight_state("cruise", "Cruise conditions met during descent")
-            STATE.change_cabin_state("cruise", "Returning to cruise")
-            return
-        end
-
+        local vs = XA_CABIN_DATAREFS.VS[0]          -- Vertical speed in ft/min
+        local agl = XA_CABIN_DATAREFS.ALT_AGL[0]     -- Altitude above ground level
+        local gear_force = XA_CABIN_DATAREFS.GEAR_FORCE[0]  -- Force on the landing gear
+    
+        -- Prevent any transitions back to cruise or climb during descent phase
+    
+        -- If aircraft descends below 800 ft AGL, gear is deployed, and VS indicates descent
         if agl < 800 and gear_force < 5 and vs < -200 then
+            -- Transition to approach phase as descent continues
             STATE.change_flight_state("approach", "Altitude < 800 AGL and descending")
+            STATE.change_cabin_state("prepare_for_landing", "Approach started, preparing for landing")
+            return
         end
+    
+        -- Optionally: Handle further descent or landing detection here if needed
+    
+        -- Landing Detection:
+        -- If the aircraft descends close to ground level (e.g., < 50 ft AGL) and has low vertical speed
+        if agl < 50 and vs < -100 then
+            -- Optionally, check that ground speed is low or the gear force is increasing (touchdown)
+            STATE.change_flight_state("landing", "Aircraft close to the ground, preparing to land")
+            STATE.change_cabin_state("final_approach", "Landing detected, final approach initiated")
+            return
+        end
+    
+        -- Final touchdown detection (Optional):
+        -- Once the gear force is significant, indicating that the aircraft has landed
+        if agl < 10 and gear_force > 10 then
+            STATE.change_flight_state("taxi_in", "Landing complete, aircraft is taxiing")
+            STATE.change_cabin_state("post_landing", "Landing completed, transitioning to taxi")
+            return
+        end
+    
         return
     end
 
