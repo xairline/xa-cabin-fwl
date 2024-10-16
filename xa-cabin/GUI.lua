@@ -1,7 +1,7 @@
 local GUI = {};
 local FIRST_ROW_HEIGHT_PERCENT = 0.4
 local SECOND_ROW_HEIGHT_PERCENT = (1 - FIRST_ROW_HEIGHT_PERCENT) * 0.85
-
+--announcement_volume = 0.5  -- Default to 50% volume if it's not set yet
 function GUI.SimbriefInfo(win_width, win_height)
     if imgui.BeginChild("SimbriefInfo", win_width * 0.6, win_height * FIRST_ROW_HEIGHT_PERCENT) then
         imgui.TextUnformatted("Flight No: ")
@@ -94,6 +94,7 @@ function GUI.Configuration(win_width, win_height)
         imgui.Spacing()
         imgui.Spacing()
 
+        -- Automated Mode Checkbox
         local currentMode = XA_CABIN_SETTINGS.mode.automated
         local modeChanged, newMode = imgui.Checkbox("Mode: ", currentMode)
         if modeChanged then
@@ -112,6 +113,7 @@ function GUI.Configuration(win_width, win_height)
         end
         imgui.PopStyleColor()
 
+
         imgui.Spacing()
         local currentLiveMode = XA_CABIN_SETTINGS.mode.live
         local liveModeChanged, newLiveMode = imgui.Checkbox("Announcements Generation: ", currentLiveMode)
@@ -120,7 +122,7 @@ function GUI.Configuration(win_width, win_height)
             XA_CABIN_SETTINGS.mode.live = newLiveMode
             LIP.save(SCRIPT_DIRECTORY .. "xa-cabin.ini", XA_CABIN_SETTINGS)
         end
-
+        
         imgui.SameLine()
         if XA_CABIN_SETTINGS.mode.live then
             imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00)
@@ -130,6 +132,25 @@ function GUI.Configuration(win_width, win_height)
             imgui.TextUnformatted("Offline")
         end
         imgui.PopStyleColor()
+
+        imgui.Spacing()
+
+        -- Volume Slider Section
+        imgui.TextUnformatted("Volume: ")
+        imgui.SameLine()
+
+        -- Ensure announcement_volume is defined and initialized to a reasonable default
+        announcement_volume = announcement_volume or 0.5  -- Default to 50% if not set
+
+          -- Slider for volume control, displaying as 0% to 100%
+        local volume_percent = announcement_volume * 100
+        local volumeChanged, newVolumePercent = imgui.SliderFloat("", volume_percent, 0.0, 100.0, "%.0f%%")
+        
+        -- Check if the slider value changed
+        if volumeChanged then
+            announcement_volume = newVolumePercent / 100  -- Convert to 0.0 - 1.0 scale
+            XA_CABIN_LOGGER.write_log("Slider updated volume to: " .. tostring(announcement_volume))
+        end
         imgui.Spacing()
         imgui.Spacing()
 
@@ -160,41 +181,64 @@ function GUI.Configuration(win_width, win_height)
     imgui.EndChild()
 end
 
+
 function GUI.Announcements(win_width, win_height)
     if imgui.BeginChild("Announcements", win_width - 32, win_height * SECOND_ROW_HEIGHT_PERCENT) then
         imgui.SetWindowFontScale(1.2)
         if imgui.BeginTable("XA Cabin", 3) then
-            for i = 2, #XA_CABIN_CABIN_XA_CABIN_STATES, 3
-            do
+            for i = 1, #XA_CABIN_ANNOUNCEMENT_STATES, 3 do
                 imgui.Spacing()
                 imgui.Spacing()
                 imgui.Spacing()
                 imgui.Spacing()
                 imgui.TableNextRow()
-                imgui.TableNextColumn()
-                if imgui.Button(XA_CABIN_CABIN_XA_CABIN_STATES[i], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-                    ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i])
-                end
-                imgui.TableNextColumn()
-                if XA_CABIN_CABIN_XA_CABIN_STATES[i + 1] == nil then
-                    break
-                end
-                if imgui.Button(XA_CABIN_CABIN_XA_CABIN_STATES[i + 1], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-                    ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i + 1])
-                end
-                imgui.TableNextColumn()
 
-                if XA_CABIN_CABIN_XA_CABIN_STATES[i + 2] == nil then
-                    break
+                -- First Column
+                imgui.TableNextColumn()
+                if XA_CABIN_ANNOUNCEMENT_STATES[i] then
+                    if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i], win_width * 0.3 - 16, 50) then
+                        local cabin_state = announcement_name_to_cabin_state(XA_CABIN_ANNOUNCEMENT_STATES[i])
+                        if cabin_state then
+                            --STATE.change_cabin_state(cabin_state)
+                            ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i])
+                        else
+                            XA_CABIN_LOGGER.write_log("Failed to find cabin state for announcement: " .. XA_CABIN_ANNOUNCEMENT_STATES[i])
+                        end
+                    end
                 end
-                if imgui.Button(XA_CABIN_CABIN_XA_CABIN_STATES[i + 2], win_width * 0.3 - 16, 50) then -- Bigger than normal sized button
-                    ANNOUNCEMENTS.play_sound(XA_CABIN_CABIN_XA_CABIN_STATES[i + 2])
+
+                -- Second Column
+                imgui.TableNextColumn()
+                if XA_CABIN_ANNOUNCEMENT_STATES[i + 1] then
+                    if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i + 1], win_width * 0.3 - 16, 50) then
+                        local cabin_state = announcement_name_to_cabin_state(XA_CABIN_ANNOUNCEMENT_STATES[i + 1])
+                        if cabin_state then
+                            --STATE.change_cabin_state(cabin_state)
+                            ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i+1])
+                        else
+                            XA_CABIN_LOGGER.write_log("Failed to find cabin state for announcement: " .. XA_CABIN_ANNOUNCEMENT_STATES[i + 1])
+                        end
+                    end
+                end
+
+                -- Third Column
+                imgui.TableNextColumn()
+                if XA_CABIN_ANNOUNCEMENT_STATES[i + 2] then
+                    if imgui.Button(XA_CABIN_ANNOUNCEMENT_STATES[i + 2], win_width * 0.3 - 16, 50) then
+                        local cabin_state = announcement_name_to_cabin_state(XA_CABIN_ANNOUNCEMENT_STATES[i + 2])
+                        if cabin_state then
+                            --STATE.change_cabin_state(cabin_state)
+                            ANNOUNCEMENTS.play_sound(XA_CABIN_ANNOUNCEMENT_STATES[i+2])
+                        else
+                            XA_CABIN_LOGGER.write_log("Failed to find cabin state for announcement: " .. XA_CABIN_ANNOUNCEMENT_STATES[i + 2])
+                        end
+                    end
                 end
             end
+            imgui.EndTable()
         end
-        imgui.EndTable()
+        imgui.EndChild()
     end
-    imgui.EndChild()
 end
 
 return GUI;
