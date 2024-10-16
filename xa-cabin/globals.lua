@@ -1,5 +1,8 @@
+-- globals.lua
+
 XA_CABIN_VERSION = "v0.0.1"
-XA_CABIN_CABIN_XA_CABIN_STATES = {
+
+XA_CABIN_ANNOUNCEMENT_STATES = {
     "Pre-Boarding",
     "Boarding",
     "Boarding Complete",
@@ -13,19 +16,10 @@ XA_CABIN_CABIN_XA_CABIN_STATES = {
     "Emergency"
 }
 
-XA_CABIN_SETTINGS = {
-    simbrief = {
-        username = ""
-    },
-    mode = {
-        automated = false
-    },
-    announcement = {
-        language = "en",
-        accent = "in",
-        speaker = "01"
-    }
-}
+-- XA_CABIN_SETTINGS should already be loaded from ini before globals.lua is executed
+
+XA_CABIN_LANGUAGE = XA_CABIN_SETTINGS.announcement.language or "en"
+XA_CABIN_ACCENT = XA_CABIN_SETTINGS.announcement.accent or "gb"
 
 XA_CABIN_STATES = {
     flight_state = {
@@ -54,14 +48,13 @@ XA_CABIN_STATES = {
     },
 }
 
-
 XA_CABIN_DATAREFS = {}
 
 XA_CABIN_PLANE_CONFIG = {
     DOOR = {
         dataref_str = 'sim/flightmodel2/misc/door_open_ratio',
-        operator = ">",
-        threshold = 0.9
+        operator = ">=",
+        threshold = 0.5
     },
     LANDING_GEAR = {
         dataref_str = 'sim/flightmodel2/gear/deploy_ratio',
@@ -69,8 +62,12 @@ XA_CABIN_PLANE_CONFIG = {
         threshold = 0
     },
     LANDING_LIGHTS = {
-        dataref_str = 'ckpt/oh/rwyTurnOff/anim',
+        dataref_str = 'sim/cockpit/electrical/landing_lights_on',
         operator = "==",
         threshold = 1
     },
 }
+
+-- Log the loaded language and accent for debugging
+XA_CABIN_LOGGER.write_log("XA_CABIN_LANGUAGE set to: " .. XA_CABIN_LANGUAGE)
+XA_CABIN_LOGGER.write_log("XA_CABIN_ACCENT set to: " .. XA_CABIN_ACCENT)

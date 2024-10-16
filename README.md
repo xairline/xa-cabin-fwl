@@ -1,29 +1,30 @@
+
 # AI Powered Cabin Announcement
 
-The AI Powered Cabin Announcement plugin is a powerful tool that enhances the cabin announcement system in aircraft. It utilizes advanced artificial intelligence algorithms to generate high-quality and natural-sounding announcements.
+The **AI Powered Cabin Announcement** plugin enhances the cabin announcement system for flight simulations by utilizing cutting-edge artificial intelligence algorithms to generate high-quality, natural-sounding announcements.
 
-Compared to older plugins, the AI Powered Cabin Announcement plugin offers several advantages. Firstly, it provides more realistic and human-like voice synthesis, resulting in a more immersive and engaging experience for passengers. The AI algorithms used in this plugin have been trained on vast amounts of data, enabling them to produce highly accurate and expressive speech.
+Compared to older plugins, the **AI Powered Cabin Announcement** offers several advantages:
+1. **Human-like Voice Synthesis**: The AI engine generates highly realistic and expressive speech, resulting in a more immersive experience for passengers.
+2. **Flexibility and Customization**: The plugin allows easy configuration of both global and aircraft-specific settings, enabling tailored announcements based on each aircraft’s unique characteristics.
+3. **Sound Pack Integration**: Airlines can incorporate their own branding and unique audio elements into announcements, creating a distinctive cabin environment.
+4. **Dynamic Announcement Generation**: The plugin now supports **real-time generation** of announcements using `generate_announcements.py`. This feature adapts announcements based on dynamic factors like flight status, weather conditions, and passenger information, keeping them relevant throughout the flight.
 
-Additionally, the plugin offers greater flexibility and customization options. It allows for easy configuration of both global settings and specific settings for different aircraft types. This ensures that the announcements are tailored to the unique characteristics of each aircraft, enhancing the overall passenger experience.
+Overall, the **AI Powered Cabin Announcement** plugin revolutionizes the in-flight announcement experience by leveraging AI technology to deliver superior audio quality, customization, and dynamic real-time generation.
 
-Furthermore, the plugin supports the addition of sound packs, allowing airlines to incorporate their own branding and unique audio elements into the announcements. This level of customization helps to create a distinct and memorable cabin environment for passengers.
+---
 
-Lastly, the plugin includes a live generation feature, which is currently a work in progress (TODO). This feature will enable real-time generation of announcements based on dynamic factors such as flight status, weather conditions, and passenger demographics. This ensures that the announcements remain relevant and up-to-date throughout the flight.
+## Installation
 
-Overall, the AI Powered Cabin Announcement plugin revolutionizes the cabin announcement system by leveraging AI technology to deliver superior audio quality, customization options, and dynamic generation capabilities.
+> **Note**: FlyWithLua is required.
 
-# Installation
-
-> **NOTE:** FlyWithLua is required
-
-To install the plugin, follow these steps:
+Follow these steps to install the plugin:
 
 1. Download the plugin files.
 2. Unzip the downloaded file.
-3. Locate the `FlyWithLua/Scripts` folder in your flight simulator installation directory.
+3. Navigate to the `FlyWithLua/Scripts` folder in your flight simulator directory.
 4. Copy all the files and folders from the unzipped plugin folder into the `FlyWithLua/Scripts` folder.
 
-After the installation, the file structure should look like this:
+After installation, the file structure should look like this:
 
 ```
   Resources
@@ -39,71 +40,136 @@ After the installation, the file structure should look like this:
           xa-cabin.ini 
 ```
 
-# Configuration
-## Global Config
-The configuration is stored in xa-cabin.ini. Most configurations are avialable in the GUI
+---
 
-here are the available options:
+## Configuration
 
-[simbrief] section: (also in GUI)
-- username: This option allows you to specify a username for SimBrief, which is a flight planning tool. You can set a value for this option to provide your SimBrief username.
+### Global Configurations
 
-[mode] section: (also in GUI)
+The main configuration file is `xa-cabin.ini`, where most options can also be modified through the in-game GUI.
 
-- automated: This option is set to true, indicating that the cabin announcements will be played automatically without any manual intervention.
-- live: This option is also set to true, indicating that the announcements will be generated in real-time. (WIP)
+#### `[simbrief]` section (also configurable in the GUI):
 
-[announcement] section:
+- **`username`**: Specify your SimBrief username to integrate flight planning data.
 
-- language: This option allows you to specify the language for the cabin announcements. In this case, it is set to en for English.
-- accent: This option allows you to specify the accent for the cabin announcements. In this case, it is set to in for Indian accent.
-- speaker: This option allows you to specify the speaker for the cabin announcements. In this case, it is set to 01.
+#### `[mode]` section (also configurable in the GUI):
 
-## Aircraft Config
-A file named `xa-cabin.ini` is automatically created the first time you load that plane. The defaut configuration is using XPlane's default dataref which might not work for a lot of 3rd pary planes. You will need to configure it for each plane. If you want to run manually mode, this is not required.
+- **`automated`**: Set to `true` to play cabin announcements automatically.
+- **`live`**: Set to `true` to enable real-time announcement generation using `generate_announcements.py`.
 
-[LANDING_GEAR]:
+#### `[announcement]` section:
 
-- operator: This option specifies the comparison operator used to evaluate the condition. In this case, it is set to ~=, which means "approximately equal to".
+- **`language`**: Specifies the language of the announcements (e.g., `en` for English).
+- **`accent`**: Specifies the accent for the announcements (e.g., `in` for Indian accent).
+- **`speaker`**: Sets the speaker ID (e.g., `01`).
 
-- threshold: This option sets the threshold value for the condition. Here, it is set to 0.
-- dataref_str: This option specifies the data reference string, which is a reference to a specific data value in the simulation. In this case, it is set to sim/flightmodel2/gear/deploy_ratio.
+### Aircraft-Specific Configuration
 
-[DOOR]:
+An aircraft-specific configuration file (`xa-cabin.ini`) is automatically created the first time you load the plane. This file uses X-Plane’s default datarefs, but for third-party aircraft, you may need to configure the datarefs manually for accurate announcement triggers.
 
-- operator: This option specifies the comparison operator used to evaluate the condition. Here, it is set to >, which means "greater than".
-- threshold: This option sets the threshold value for the condition. It is set to 0.9.
-- dataref_str: This option specifies the data reference string, which is a reference to a specific data value in the simulation. In this case, it is set to sim/flightmodel2/misc/door_open_ratio.
+#### Example Configurations:
 
-[LANDING_LIGHTS]:
+- **`[LANDING_GEAR]`**:
+  - **`operator`**: The comparison operator, such as `~=` ("approximately equal to").
+  - **`threshold`**: The threshold value (e.g., `0`).
+  - **`dataref_str`**: The data reference string (e.g., `sim/flightmodel2/gear/deploy_ratio`).
 
-- operator: This option specifies the comparison operator used to evaluate the condition. Here, it is set to ===, which means "strictly equal to".
-- threshold: This option sets the threshold value for the condition. It is set to 1.
-- dataref_str: This option specifies the data reference string, which is a reference to a specific data value in the simulation. In this case, it is set to ckpt/oh/rwyTurnOff/anim.
+- **`[DOOR]`**:
+  - **`operator`**: Set to `>` for greater than.
+  - **`threshold`**: Set to `0.9`.
+  - **`dataref_str`**: Reference for door position (e.g., `sim/flightmodel2/misc/door_open_ratio`).
 
+- **`[LANDING_LIGHTS]`**:
+  - **`operator`**: Set to `===` for strict equality.
+  - **`threshold`**: Set to `1`.
+  - **`dataref_str`**: Data reference string for runway lights (e.g., `ckpt/oh/rwyTurnOff/anim`).
 
-# Sound Pack
-Currently, all announcements are generated using AI technology. However, we are actively working on developing a dedicated tool that will allow you to create your own custom sound pack in the future.
+---
 
-## List of sound
+## Sound Pack
 
-|language|accent|speaker|description|
-|--------|------|-------|-----------|
-|en|gb|1|Britsh Accent|
-|en|ca|1|Canadian Accent - SAS special|
-|en|in|1|Indian Accent|
+All announcements are currently generated using AI technology. However, we are working on a tool that will allow users to create custom sound packs in the future.
 
-## Add Sound Pack
+### List of Available Sounds
 
-Follow above naming convention, drop your wav files in each folder under `xa-cabin/announcements`
+| Language | Accent | Speaker | Description                 |
+|----------|--------|---------|-----------------------------|
+| en       | gb     | 1       | British Accent               |
+| en       | ca     | 1       | Canadian Accent (SAS special)|
+| en       | in     | 1       | Indian Accent                |
 
-change the configuration in `xa-cabin.ini`
+### Adding a Custom Sound Pack
+
+To add a custom sound pack:
+
+1. Follow the naming convention above.
+2. Place your `.wav` files in the corresponding folders under `xa-cabin/announcements/`.
+3. Update the `xa-cabin.ini` configuration:
 
 ```
 [announcement]
-language=en
-accent=gb
-speaker=1
+language=english
+accent=nova
+speaker=custom
 ```
 
-## Live Generation (TODO)
+---
+
+## Real-Time Announcement Generation
+
+The **live generation feature** is now implemented using the `generate_announcements.py` script. This script allows for dynamic generation of announcements based on real-time flight data, such as departure runways, estimated flight time, local time at destination, and weather conditions.
+
+### How to Use `generate_announcements.py`
+
+The Python script `generate_announcements.py` dynamically generates announcements in real time when the language is set to `custom`.
+
+> **Note**: Currently, you must run `generate_announcements.py` manually while **X-Plane 12** is running, and then reload the Lua script. If you have already generated announcements for your flight, you do not need to run the script again.
+
+#### Steps:
+
+1. Ensure Python is installed on your system.
+2. Set the `language` option to `custom` in the `xa-cabin.ini` file.
+3. Once X-Plane 12 is running, manually run the Python script.
+4. After running the script, reload the Lua script within X-Plane to load the generated announcements.
+
+During the start of **XA-CABIN**, check the log file. The system will print the Python command along with all the parameters fetched from SimBrief. You can copy and run this command directly to generate the announcements.
+
+#### Example Command:
+
+```
+/usr/local/bin/python3 "xa-cabin/generate_announcements.py" "Datanised Airlines" "DAT01" "Paris" "14:30" "en" "us" "01" "Runway 25R" "Runway 27L" "35,000 ft" "2" "30" "10:30 AM" "Boeing 737" "morning"
+```
+
+This command generates announcements for a flight based on SimBrief data, with real-time parameters like flight number, destination, ETA, and more.
+
+---
+
+The **AI Powered Cabin Announcement** plugin transforms in-flight audio by integrating AI technology, real-time capabilities, and flexible configuration options for creating a more realistic and engaging flight experience.
+
+# License
+
+Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)
+
+## You are free to:
+- **Share** — copy and redistribute the material in any medium or format.
+- **Adapt** — remix, transform, and build upon the material.
+
+The licensor cannot revoke these freedoms as long as you follow the license terms.
+
+## Under the following terms:
+- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+- **NonCommercial** — You may not use the material for commercial purposes.
+
+## No additional restrictions:
+- You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
+
+## Notices:
+- You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation.
+- No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.
+
+For more details, see [Creative Commons BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+
+
+## Acknowledgement
+
+This project is a fork of the original open-source **XA-CABIN** plugin developed by [X-Airline](https://github.com/xairline/xa-cabin-fwl). We extend our gratitude to the contributors of the original project for their work and commitment to the flight simulation community.
